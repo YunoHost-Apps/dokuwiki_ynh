@@ -11,6 +11,13 @@
     },
     "version": "2020-07-29~ynh4",
     "url": "https://www.dokuwiki.org",
+    "upstream": {
+        "license": "GPL-2.0-or-later",
+        "website": "https://www.dokuwiki.org",
+        "demo": "https://demo.yunohost.org/dokuwiki/doku.php?id=start&do=login&u=demo&p=demo",
+        "admindoc": "https://www.dokuwiki.org/manual",
+        "code": "https://github.com/splitbrain/dokuwiki"
+    },
     "license": "GPL-2.0-or-later",
     "maintainer": {
         "name": "Gofannon",
@@ -22,7 +29,7 @@
         "email": "opi@zeropi.net"
     }],
     "requirements": {
-        "yunohost": ">= 4.1.7"
+        "yunohost": ">= 4.3.0"
     },
     "multi_instance": true,
     "services": [
@@ -33,8 +40,7 @@
         "install" : [
             {
                 "name": "domain",
-                "type": "domain",
-                "example": "domain.org"
+                "type": "domain"
             },
             {
                 "name": "path",
@@ -44,8 +50,7 @@
             },
             {
                 "name": "admin",
-                "type": "user",
-                "example": "johndoe"
+                "type": "user"
             },
             {
                 "name": "is_public",

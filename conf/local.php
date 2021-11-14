@@ -10,4 +10,4 @@
 
 
 /* Basic Settings */
-$conf['lang']        = '__YNH_LANGUAGE__';              //your language
+$conf['lang']        = '__LANGUAGE__';              //your language

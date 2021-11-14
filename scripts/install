@@ -49,6 +49,13 @@ ynh_app_setting_set --app=$app --key=path --value=$path_url
 ynh_app_setting_set --app=$app --key=language --value=$language
 
 #=================================================
+# INSTALL DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Installing dependencies..." --weight=1
+
+ynh_install_app_dependencies $pkg_dependencies
+
+#=================================================
 # STANDARD MODIFICATIONS
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
@@ -81,7 +88,7 @@ ynh_system_user_create --username=$app
 ynh_script_progression --message="Configuring PHP-FPM..." --weight=2
 
 # Create a dedicated PHP-FPM config
-ynh_add_fpm_config --package="$extra_php_dependencies"
+ynh_add_fpm_config
 phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
 #=================================================
@@ -120,7 +127,7 @@ ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_fil
 cp ../conf/local.php           $final_path/conf
 
 # Set the "language"
-ynh_replace_string --match_string="__YNH_LANGUAGE__"   --replace_string="$language" --target_file="$final_path/conf/local.php"
+ynh_replace_string --match_string="__LANGUAGE__"   --replace_string="$language" --target_file="$final_path/conf/local.php"
 
 
 # Restrict user rights by enforcing "read-only" mode for all users
