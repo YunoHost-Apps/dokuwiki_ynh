@@ -157,6 +157,14 @@ if [ ! -f "$final_path/inc/preload.php" ]; then
 fi
 
 #=================================================
+# CREATE DEDICATED USER
+#=================================================
+ynh_script_progression --message="Making sure dedicated system user exists..." --weight=1
+
+# Create a system user
+ynh_system_user_create --username=$app --home_dir="$final_path"
+
+#=================================================
 # STANDARD UPGRADE STEPS
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
@@ -169,6 +177,10 @@ then
 	# Download, check integrity, uncompress and patch the source from app.src
 	ynh_setup_source --dest_dir="$final_path"
 fi
+
+chmod 750 "$final_path"
+chmod -R o-rwx "$final_path"
+chown -R $app:www-data "$final_path"
 
 #=================================================
 # NGINX CONFIGURATION
@@ -184,14 +196,6 @@ ynh_add_nginx_config
 ynh_script_progression --message="Upgrading dependencies..." --weight=1
 
 ynh_install_app_dependencies $pkg_dependencies
-
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Making sure dedicated system user exists..." --weight=1
-
-# Create a system user
-ynh_system_user_create --username=$app
 
 #=================================================
 # PHP-FPM CONFIGURATION
@@ -296,48 +300,48 @@ ynh_script_progression --message="Upgrading logautherror plugin for Fail2Ban..."
 
 ynh_setup_source --dest_dir="$final_path/lib/plugins/logautherror" --source_id=logautherror
 
-#=================================================
-# GENERIC FINALIZATION
-#=================================================
-# SECURE FILES AND DIRECTORIES
-#=================================================
+# #=================================================
+# # GENERIC FINALIZATION
+# #=================================================
+# # SECURE FILES AND DIRECTORIES
+# #=================================================
 
-# Try to use "least privilege" to grant minimal access
-# For details, see https://www.dokuwiki.org/install:permissions
+# # Try to use "least privilege" to grant minimal access
+# # For details, see https://www.dokuwiki.org/install:permissions
 
-# Files owned by DokuWiki can just read
-chown -R root: $final_path
+# # Files owned by DokuWiki can just read
+# chown -R root: $final_path
 
-# DokuWiki needs to write inside these folders. Make "DokuWiki" owner
-chown $app:root $final_path/{conf,inc}
+# # DokuWiki needs to write inside these folders. Make "DokuWiki" owner
+# chown $app:root $final_path/{conf,inc}
 
-# Make "DokuWiki" owner of configuration files that must be writable
-chown $app:root $final_path/conf/{local.php,local.php.bak,users.auth.php,acl.auth.php,plugins.local.php,plugins.local.php.bak}
+# # Make "DokuWiki" owner of configuration files that must be writable
+# chown $app:root $final_path/conf/{local.php,local.php.bak,users.auth.php,acl.auth.php,plugins.local.php,plugins.local.php.bak}
 
-# Usefull for some plugins like https://www.dokuwiki.org/plugin:siteexport
-# See https://www.dokuwiki.org/devel:preload
-chown $app:root $final_path/inc/preload.php
+# # Usefull for some plugins like https://www.dokuwiki.org/plugin:siteexport
+# # See https://www.dokuwiki.org/devel:preload
+# chown $app:root $final_path/inc/preload.php
 
-# Grant read-only to all files as files copied above are owned by root by defaut and nginx cannot read them
-# There are only files in the folder and there are no sublevels. No need to use "find"
-chmod -R a+r $final_path/{conf,inc}
+# # Grant read-only to all files as files copied above are owned by root by defaut and nginx cannot read them
+# # There are only files in the folder and there are no sublevels. No need to use "find"
+# chmod -R a+r $final_path/{conf,inc}
 
-# Give write access to "data" and subfolders
-chown -R $app:root $final_path/data
-# Remove access to "other"
-chmod -R o-rwx $final_path/data
+# # Give write access to "data" and subfolders
+# chown -R $app:root $final_path/data
+# # Remove access to "other"
+# chmod -R o-rwx $final_path/data
 
-# Allow the web admin panel to run, aka "Extension Manager"
-chown -R $app:root $final_path/lib/plugins
-# Allow to install templates
-chown -R $app:root $final_path/lib/tpl
+# # Allow the web admin panel to run, aka "Extension Manager"
+# chown -R $app:root $final_path/lib/plugins
+# # Allow to install templates
+# chown -R $app:root $final_path/lib/tpl
 
-# Allow access to public assets like style sheets
-find $final_path/lib -type f -print0 | xargs -0 chmod 0644
-find $final_path/lib -type d -print0 | xargs -0 chmod 0755
-# Using "find" instead of "chmod -R 755" so files does not become executable too
-# chmod :   -rwxr-xr-x  1 root root  241 May  3 08:36 index.html   => BAD
-# find  :   -rw-r--r--  1 1001 1002  241 May  3 08:36 index.html   => GOOD
+# # Allow access to public assets like style sheets
+# find $final_path/lib -type f -print0 | xargs -0 chmod 0644
+# find $final_path/lib -type d -print0 | xargs -0 chmod 0755
+# # Using "find" instead of "chmod -R 755" so files does not become executable too
+# # chmod :   -rwxr-xr-x  1 root root  241 May  3 08:36 index.html   => BAD
+# # find  :   -rw-r--r--  1 1001 1002  241 May  3 08:36 index.html   => GOOD
 
 #=================================================
 # SETUP FAIL2BAN

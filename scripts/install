@@ -56,6 +56,14 @@ ynh_script_progression --message="Installing dependencies..." --weight=1
 ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
+# CREATE DEDICATED USER
+#=================================================
+ynh_script_progression --message="Configuring system user..." --weight=2
+
+# Create a system user
+ynh_system_user_create --username=$app --home_dir="$final_path"
+
+#=================================================
 # STANDARD MODIFICATIONS
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
@@ -66,6 +74,10 @@ ynh_app_setting_set --app=$app --key=final_path --value=$final_path
 # Download, check integrity, uncompress and patch the source from app.src
 ynh_setup_source --dest_dir="$final_path"
 
+chmod 750 "$final_path"
+chmod -R o-rwx "$final_path"
+chown -R $app:www-data "$final_path"
+
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
@@ -73,14 +85,6 @@ ynh_script_progression --message="Configuring NGINX web server..." --weight=2
 
 # Create a dedicated NGINX config
 ynh_add_nginx_config
-
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Configuring system user..." --weight=2
-
-# Create a system user
-ynh_system_user_create --username=$app
 
 #=================================================
 # PHP-FPM CONFIGURATION
@@ -112,28 +116,29 @@ ynh_script_progression --message="Configuring DokuWiki..." --weight=2
 ### Copy YunoHost specific configuration
 # This File cannot be modified directly by DokuWiki, only by hand or by YunoHost
 # It will only be updated by Yunohost package or directly by adventurous users
-cp ../conf/local.protected.php $final_path/conf
+#cp ../conf/local.protected.php $final_path/conf
 
 # Create the "admin" group and add the "admin" user
 ynh_permission_create --permission "admin" --allowed "$admin_user"
 
 # Customize admin group in case of multiple wiki install managed by different admins
 # dokuwiki.admin; dokuwiki__1.admin; etc
-ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$final_path/conf/local.protected.php"
-
+#ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$final_path/conf/local.protected.php"
+ynh_add_config --template="../conf/local.protected.php" --destination="$final_path/conf/local.protected.php"
 
 # This file might be modified by DokuWiki admin panel or by plugins
 # It will not be modified by Yunohost in order to keep user settings
-cp ../conf/local.php           $final_path/conf
+#cp ../conf/local.php           $final_path/conf
 
 # Set the "language"
-ynh_replace_string --match_string="__LANGUAGE__"   --replace_string="$language" --target_file="$final_path/conf/local.php"
-
+#ynh_replace_string --match_string="__LANGUAGE__"   --replace_string="$language" --target_file="$final_path/conf/local.php"
+ynh_add_config --template="../conf/local.php" --destination="$final_path/conf/local.php"
 
 # Restrict user rights by enforcing "read-only" mode for all users
 # See https://www.dokuwiki.org/acl#background_info
 # Default is "8"
-cp ../conf/acl.auth.php        $final_path/conf
+#cp ../conf/acl.auth.php        $final_path/conf
+ynh_add_config --template="../conf/acl.auth.php" --destination="$final_path/conf/acl.auth.php "
 
 #=================================================
 # CREATE DEFAULT FILES
@@ -163,7 +168,7 @@ cp ../conf/plugins.local.php            $final_path/conf/plugins.local.php.bak
 #=================================================
 
 # Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum --file="$final_path/conf/local.protected.php"
+#ynh_store_file_checksum --file="$final_path/conf/local.protected.php"
 ### Files '$final_path/conf/local.php' and '$final_path/conf/acl.auth.php' can be modified by user, no need to store checksum as they cannot be overwritten safely by the upgrade script
 
 #=================================================
@@ -173,48 +178,48 @@ ynh_script_progression --message="Installing logautherror plugin for Fail2Ban...
 
 ynh_setup_source --dest_dir="$final_path/lib/plugins/logautherror" --source_id=logautherror
 
-#=================================================
-# GENERIC FINALIZATION
-#=================================================
-# SECURE FILES AND DIRECTORIES
-#=================================================
+# #=================================================
+# # GENERIC FINALIZATION
+# #=================================================
+# # SECURE FILES AND DIRECTORIES
+# #=================================================
 
-# Try to use "least privilege" to grant minimal access
-# For details, see https://www.dokuwiki.org/install:permissions
+# # Try to use "least privilege" to grant minimal access
+# # For details, see https://www.dokuwiki.org/install:permissions
 
-# Files owned by DokuWiki can just read
-chown -R root: $final_path
+# # Files owned by DokuWiki can just read
+# chown -R root: $final_path
 
-# DokuWiki needs to write inside these folders. Make "DokuWiki" owner
-chown $app:root $final_path/{conf,inc}
+# # DokuWiki needs to write inside these folders. Make "DokuWiki" owner
+# chown $app:root $final_path/{conf,inc}
 
-# Make "DokuWiki" owner of configuration files that must be writable
-chown $app:root $final_path/conf/{local.php,local.php.bak,users.auth.php,acl.auth.php,plugins.local.php,plugins.local.php.bak}
+# # Make "DokuWiki" owner of configuration files that must be writable
+# chown $app:root $final_path/conf/{local.php,local.php.bak,users.auth.php,acl.auth.php,plugins.local.php,plugins.local.php.bak}
 
-# Usefull for some plugins like https://www.dokuwiki.org/plugin:siteexport
-# See https://www.dokuwiki.org/devel:preload
-chown $app:root $final_path/inc/preload.php
+# # Usefull for some plugins like https://www.dokuwiki.org/plugin:siteexport
+# # See https://www.dokuwiki.org/devel:preload
+# chown $app:root $final_path/inc/preload.php
 
-# Grant read-only to all files as files copied above are owned by root by defaut and nginx cannot read them
-# There are only files in the folder and there are no sublevels. No need to use "find"
-chmod -R a+r $final_path/{conf,inc}
+# # Grant read-only to all files as files copied above are owned by root by defaut and nginx cannot read them
+# # There are only files in the folder and there are no sublevels. No need to use "find"
+# chmod -R a+r $final_path/{conf,inc}
 
-# Give write access to "data" and subfolders
-chown -R $app:root $final_path/data
-# Remove access to "other"
-chmod -R o-rwx $final_path/data
+# # Give write access to "data" and subfolders
+# chown -R $app:root $final_path/data
+# # Remove access to "other"
+# chmod -R o-rwx $final_path/data
 
-# Allow the web admin panel to run, aka "Extension Manager"
-chown -R $app:root $final_path/lib/plugins
-# Allow to install templates
-chown -R $app:root $final_path/lib/tpl
+# # Allow the web admin panel to run, aka "Extension Manager"
+# chown -R $app:root $final_path/lib/plugins
+# # Allow to install templates
+# chown -R $app:root $final_path/lib/tpl
 
-# Allow access to public assets like style sheets
-find $final_path/lib -type f -print0 | xargs -0 chmod 0644
-find $final_path/lib -type d -print0 | xargs -0 chmod 0755
-# Using "find" instead of "chmod -R 755" so files does not become executable too
-# chmod :   -rwxr-xr-x  1 root root  241 May  3 08:36 index.html   => BAD
-# find  :   -rw-r--r--  1 1001 1002  241 May  3 08:36 index.html   => GOOD
+# # Allow access to public assets like style sheets
+# find $final_path/lib -type f -print0 | xargs -0 chmod 0644
+# find $final_path/lib -type d -print0 | xargs -0 chmod 0755
+# # Using "find" instead of "chmod -R 755" so files does not become executable too
+# # chmod :   -rwxr-xr-x  1 root root  241 May  3 08:36 index.html   => BAD
+# # find  :   -rw-r--r--  1 1001 1002  241 May  3 08:36 index.html   => GOOD
 
 #=================================================
 # SETUP FAIL2BAN
