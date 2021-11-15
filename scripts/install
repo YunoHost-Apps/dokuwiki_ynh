@@ -115,29 +115,24 @@ ynh_script_progression --message="Configuring DokuWiki..." --weight=2
 
 ### Copy YunoHost specific configuration
 # This File cannot be modified directly by DokuWiki, only by hand or by YunoHost
-# It will only be updated by Yunohost package or directly by adventurous users
-#cp ../conf/local.protected.php $final_path/conf
+# It will only be updated by YunoHost package or directly by adventurous users
 
 # Create the "admin" group and add the "admin" user
 ynh_permission_create --permission "admin" --allowed "$admin_user"
 
 # Customize admin group in case of multiple wiki install managed by different admins
 # dokuwiki.admin; dokuwiki__1.admin; etc
-#ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$final_path/conf/local.protected.php"
 ynh_add_config --template="../conf/local.protected.php" --destination="$final_path/conf/local.protected.php"
 
 # This file might be modified by DokuWiki admin panel or by plugins
 # It will not be modified by Yunohost in order to keep user settings
-#cp ../conf/local.php           $final_path/conf
 
 # Set the "language"
-#ynh_replace_string --match_string="__LANGUAGE__"   --replace_string="$language" --target_file="$final_path/conf/local.php"
 ynh_add_config --template="../conf/local.php" --destination="$final_path/conf/local.php"
 
 # Restrict user rights by enforcing "read-only" mode for all users
 # See https://www.dokuwiki.org/acl#background_info
 # Default is "8"
-#cp ../conf/acl.auth.php        $final_path/conf
 ynh_add_config --template="../conf/acl.auth.php" --destination="$final_path/conf/acl.auth.php "
 
 #=================================================

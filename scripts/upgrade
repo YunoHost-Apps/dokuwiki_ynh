@@ -108,17 +108,15 @@ fi
 # Do not overwrite existing dokuwiki configuration as it could have user customization's and settings.
 # Create file if it does not exist
 if [ ! -f "$final_path/conf/local.php" ]; then
-	cp ../conf/local.php $final_path/conf
-
 	# Set the default "language"
-	ynh_replace_string --match_string="__LANGUAGE__" --replace_string="$language" --target_file="$final_path/conf/local.php"
+	ynh_add_config --template="../conf/local.php" --destination="$final_path/conf/local.php"
 fi
 
 # Do not overwrite existing ACL configuration file as it could have user customization's and settings.
 # Create file if it does not exist
 # See https://www.dokuwiki.org/acl#background_info
 if [ ! -f "$final_path/conf/acl.auth.php" ]; then
-	cp ../conf/acl.auth.php $final_path/conf
+	ynh_add_config --template="../conf/acl.auth.php" --destination="$final_path/conf/acl.auth.php"
 fi
 
 # For securing DokuWiki installation, create default files that will be writable in the "conf" folder.
