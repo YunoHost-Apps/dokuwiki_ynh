@@ -133,7 +133,7 @@ ynh_add_config --template="../conf/local.php" --destination="$final_path/conf/lo
 # Restrict user rights by enforcing "read-only" mode for all users
 # See https://www.dokuwiki.org/acl#background_info
 # Default is "8"
-ynh_add_config --template="../conf/acl.auth.php" --destination="$final_path/conf/acl.auth.php "
+ynh_add_config --template="../conf/acl.auth.php" --destination="$final_path/conf/acl.auth.php"
 
 #=================================================
 # CREATE DEFAULT FILES
