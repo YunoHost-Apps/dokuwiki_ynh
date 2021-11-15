@@ -25,7 +25,7 @@ DokuWiki is a simple to use and highly versatile Open Source wiki software that 
 * During the upgrade, official plugins are also upgraded. We recommend that you should check that they run properly in the administration panel after the upgrade. We cannot know if some plugins are broken...
 
 
-**Shipped version:** 2020-07-29~ynh4
+**Shipped version:** 2020.07.29~ynh4
 
 **Demo:** https://demo.yunohost.org/dokuwiki/doku.php?id=start&do=login&u=demo&p=demo
 

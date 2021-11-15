@@ -21,7 +21,7 @@ DokuWiki est un logiciel wiki Open Source simple à utiliser et très polyvalent
 * Lors de la mise à jour, les plugins officiels sont également mis à jour. Nous vous recommandons toutefois de vérifier le bon fonctionnement des plugins dans le panneau d'administration après cette opération. Nous ne pouvons pas savoir si des plugins spéciaux posent problèmes...
 
 
-**Version incluse :** 2020-07-29~ynh4
+**Version incluse :** 2020.07.29~ynh4
 
 **Démo :** https://demo.yunohost.org/dokuwiki/doku.php?id=start&do=login&u=demo&p=demo
 
