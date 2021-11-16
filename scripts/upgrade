@@ -60,7 +60,7 @@ if [ -z "$datadir" ]; then
 
     mkdir -p $datadir
 
-    chmod 775 "$datadir"
+    chmod 777 "$datadir"
     chmod -R o-rwx "$datadir"
     chown -R $app:www-data "$datadir"
 fi
