@@ -103,7 +103,7 @@ ynh_script_progression --message="Creating a data directory..." --weight=1
 datadir=/home/yunohost.app/$app
 ynh_app_setting_set --app=$app --key=datadir --value=$datadir
 
-mkdir -p $datadir
+mkdir -p $datadir/data
 
 chmod 775 "$datadir"
 chmod -R o-rwx "$datadir"
