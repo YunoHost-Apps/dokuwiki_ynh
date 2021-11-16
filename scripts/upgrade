@@ -53,6 +53,17 @@ if [ -z "$final_path" ]; then
 	ynh_app_setting_set --app=$app --key=final_path --value=$final_path
 fi
 
+if [ -z "$datadir" ]; then
+    datadir=/home/yunohost.app/$app
+    ynh_app_setting_set --app=$app --key=datadir --value=$datadir
+
+    mkdir -p $datadir
+
+    chmod 750 "$datadir"
+    chmod -R o-rwx "$datadir"
+    chown -R $app:www-data "$datadir"
+fi
+
 # language default value, if not set
 if [ -z "$language" ]; then
 	language='en'
@@ -349,11 +360,10 @@ ynh_script_progression --message="Reconfiguring Fail2Ban..." --weight=7
 
 ynh_add_fail2ban_config --logpath="/var/log/nginx/$domain-error.log" --failregex="^.*authentication failure. while reading response header from upstream, client: <HOST>,.*POST $path_url.*$" --max_retry=5
 
-
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading NGINX web server..."
+ynh_script_progression --message="Reloading NGINX web server..." --weight=1
 
 ynh_systemd_action --service_name=nginx --action=reload
 

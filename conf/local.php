@@ -11,3 +11,4 @@
 
 /* Basic Settings */
 $conf['lang']        = '__LANGUAGE__';              //your language
+$conf['savedir']     = '/home/yunohost.app/__APP__/data'; 
