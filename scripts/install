@@ -117,8 +117,6 @@ ynh_script_progression --message="Configuring DokuWiki..." --weight=2
 # This File cannot be modified directly by DokuWiki, only by hand or by YunoHost
 # It will only be updated by YunoHost package or directly by adventurous users
 
-# Create the "admin" group and add the "admin" user
-ynh_permission_create --permission "admin" --allowed "$admin_user"
 
 # Customize admin group in case of multiple wiki install managed by different admins
 # dokuwiki.admin; dokuwiki__1.admin; etc
@@ -220,6 +218,9 @@ ynh_add_fail2ban_config --logpath="/var/log/nginx/$domain-error.log" --failregex
 # SETUP SSOWAT
 #=================================================
 ynh_script_progression --message="Configuring permissions..." --weight=2
+
+# Create the "admin" permission and add the "admin_user" to it
+ynh_permission_create --permission "admin" --allowed "$admin_user"
 
 # Make app public if necessary
 if [ $is_public -eq 1 ]
