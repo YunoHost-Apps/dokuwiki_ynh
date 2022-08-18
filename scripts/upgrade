@@ -283,15 +283,27 @@ fi
 
     # TODO Taken from old "upgrade" script. Should check if it is needed and what it does
     # Update all plugins
-    for name_plugin in $(sudo -s cat $final_path/lib/plugins/*/plugin.info.txt | grep url | awk -F ':' '{print $3}');
-    do
-        # Get a official plugin for dokuwiki, not update a no-official
-        wget -nv --quiet "https://github.com/splitbrain/dokuwiki-plugin-$name_plugin/zipball/master" -O "${name_plugin}.zip" -o /dev/null || true
-        if [ -s "${name_plugin}.zip" ]; then
-            unzip ${name_plugin}.zip
-            cp -a splitbrain-dokuwiki-plugin-${name_plugin}*/. "$final_path/lib/plugins/$name_plugin/"
-        fi
-    done
+    ###for name_plugin in $(sudo -s cat $final_path/lib/plugins/*/plugin.info.txt | grep url | awk -F ':' '{print $3}');
+    ###do
+    ###    # Get a official plugin for dokuwiki, not update a no-official
+    ###    wget -nv --quiet "https://github.com/splitbrain/dokuwiki-plugin-$name_plugin/zipball/master" -O "${name_plugin}.zip" -o /dev/null || true
+    ###    if [ -s "${name_plugin}.zip" ]; then
+    ###        unzip ${name_plugin}.zip
+    ###        cp -a splitbrain-dokuwiki-plugin-${name_plugin}*/. "$final_path/lib/plugins/$name_plugin/"
+    ###    fi
+    ###done
+
+    # if "file" exists and is executable
+    # Stolen from https://github.com/YunoHost-Apps/grav_ynh/blob/testing/scripts/upgrade#L189
+    if [ -x "$final_path/bin/plugin.php" ]; then
+    pushd "$final_path"
+        ynh_exec_warn_less ynh_exec_as $app php${YNH_PHP_VERSION} bin/plugin.php --no-colors extension upgrade || ynh_print_warn --message="Automatic plugin upgrade has failed, you can upgrade them from your DokuWiki admin panel."
+    popd
+    else
+        ynh_print_warn --message="Automatic plugin cannot be done, you have to upgrade them from your DokuWiki admin panel."
+    fi
+
+
 fi
 
 #=================================================
