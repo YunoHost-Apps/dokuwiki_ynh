@@ -1,6 +1,0 @@
-SOURCE_URL=https://github.com/mallchin/dokuwiki_plugin_logautherror/archive/master.zip
-SOURCE_SUM=bc51d4da781d0aabab8e086e51f3cb77ac983eb4366f4c8f5247bb863d4a3bb2
-SOURCE_SUM_PRG=sha256sum
-SOURCE_FORMAT=zip
-SOURCE_IN_SUBDIR=true
-SOURCE_FILENAME=

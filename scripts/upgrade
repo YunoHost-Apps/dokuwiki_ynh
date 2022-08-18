@@ -170,6 +170,14 @@ if [ ! -f "$final_path/inc/preload.php" ]; then
 	fi
 fi
 
+# purge "LOGAUTHERROR PLUGIN" as not compatible and not maintained anymore
+# See https://www.dokuwiki.org/plugin:logautherror
+if [ -d "$final_path/lib/plugins/logautherror" ]; then
+    ynh_script_progression --message="Purge "LOGAUTHERROR PLUGIN" as not maintained anymore" --weight=1
+    ynh_secure_remove --file "$final_path/lib/plugins/logautherror"
+fi
+
+
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
