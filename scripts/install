@@ -141,20 +141,20 @@ ynh_add_config --template="../conf/acl.auth.php" --destination="$final_path/conf
 # Other files will be read ony and owned by root.
 # See https://www.dokuwiki.org/install:permissions
 
-cp $final_path/conf/local.php.dist      $final_path/conf/local.php.bak
-cp $final_path/conf/users.auth.php.dist $final_path/conf/users.auth.php
+cp --archive $final_path/conf/local.php.dist      $final_path/conf/local.php.bak
+cp --archive $final_path/conf/users.auth.php.dist $final_path/conf/users.auth.php
 
 # This file might be used by plugins like https://www.dokuwiki.org/plugin:siteexport
 # Create it to be more "user friendly" as over the top security is not the main goal here
 # This file could be use for bad behaviour.
 # See https://www.dokuwiki.org/devel:preload?s[]=preload
-cp $final_path/inc/preload.php.dist     $final_path/inc/preload.php
+cp --archive $final_path/inc/preload.php.dist     $final_path/inc/preload.php
 
 # There is no template .dist provided inside DokuWiki installation folder
 # Create "empty" files to be able to manage linux permissions
 # Files content is taken from an existing DokuWiki installation
-cp ../conf/plugins.local.php            $final_path/conf
-cp ../conf/plugins.local.php            $final_path/conf/plugins.local.php.bak
+cp --archive ../conf/plugins.local.php            $final_path/conf
+cp --archive ../conf/plugins.local.php            $final_path/conf/plugins.local.php.bak
 
 #=================================================
 # STORE THE CHECKSUM OF THE CONFIG FILE

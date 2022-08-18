@@ -143,22 +143,22 @@ if [ ! -f "$final_path/conf/local.php.bak" ]; then
 	# if template exists
 	if [ -f "$final_path/conf/local.php.dist" ]; then
 		# Copy template to create default file
-		cp "$final_path/conf/local.php.dist" "$final_path/conf/local.php.bak"
+		cp --archive "$final_path/conf/local.php.dist" "$final_path/conf/local.php.bak"
 	fi
 fi
 
 if [ ! -f "$final_path/conf/users.auth.php" ]; then
 	if [ -f "$final_path/conf/users.auth.php.dist" ]; then
-		cp $final_path/conf/users.auth.php.dist $final_path/conf/users.auth.php
+		cp --archive $final_path/conf/users.auth.php.dist $final_path/conf/users.auth.php
 	fi
 fi
 
 if [ ! -f "$final_path/conf/plugins.local.php" ]; then
-	cp ../conf/plugins.local.php $final_path/conf
+	cp --archive ../conf/plugins.local.php $final_path/conf
 fi
 
 if [ ! -f "$final_path/conf/plugins.local.php.bak" ]; then
-	cp ../conf/plugins.local.php $final_path/conf/plugins.local.php.bak
+	cp --archive ../conf/plugins.local.php $final_path/conf/plugins.local.php.bak
 fi
 
 
@@ -166,7 +166,7 @@ if [ ! -f "$final_path/inc/preload.php" ]; then
 	# if template exists
 	if [ -f "$final_path/inc/preload.php.dist" ]; then
 		# Copy template to create default file
-		cp "$final_path/inc/preload.php.dist" "$final_path/inc/preload.php"
+		cp --archive "$final_path/inc/preload.php.dist" "$final_path/inc/preload.php"
 	fi
 fi
 
@@ -315,7 +315,7 @@ fi
 ynh_backup_if_checksum_is_different --file="$final_path/conf/local.protected.php"
 
 # Always overwrite local file with the one from package.
-cp ../conf/local.protected.php $final_path/conf
+cp --archive ../conf/local.protected.php $final_path/conf
 
 # Customize admin group in case of multiple wiki install managed by different admins
 # dokuwiki.admin; dokuwiki__1.admin; etc
