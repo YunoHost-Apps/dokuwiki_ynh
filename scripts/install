@@ -79,14 +79,6 @@ chmod -R o-rwx "$final_path"
 chown -R $app:www-data "$final_path"
 
 #=================================================
-# NGINX CONFIGURATION
-#=================================================
-ynh_script_progression --message="Configuring NGINX web server..." --weight=2
-
-# Create a dedicated NGINX config
-ynh_add_nginx_config
-
-#=================================================
 # PHP-FPM CONFIGURATION
 #=================================================
 ynh_script_progression --message="Configuring PHP-FPM..." --weight=2
@@ -94,6 +86,14 @@ ynh_script_progression --message="Configuring PHP-FPM..." --weight=2
 # Create a dedicated PHP-FPM config
 ynh_add_fpm_config --usage=low --footprint=low
 phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
+
+#=================================================
+# NGINX CONFIGURATION
+#=================================================
+ynh_script_progression --message="Configuring NGINX web server..." --weight=2
+
+# Create a dedicated NGINX config
+ynh_add_nginx_config
 
 #=================================================
 # SPECIFIC SETUP
