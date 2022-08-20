@@ -225,14 +225,15 @@ ynh_add_fail2ban_config --logpath="/var/log/nginx/$domain-error.log" --failregex
 #=================================================
 ynh_script_progression --message="Configuring permissions..." --weight=2
 
-# Create the "admin" permission and add the "admin_user" to it
-ynh_permission_create --permission "admin" --allowed "$admin_user"
-
 # Make app public if necessary
 if [ $is_public -eq 1 ]
 then
 	ynh_permission_update --permission="main" --add="visitors"
 fi
+
+# Create the "admin" permission and add the "admin_user" to it
+# More users can be added to the group from the YunoHost webadmin
+ynh_permission_create --permission "admin" --allowed "$admin_user"
 
 #=================================================
 # RELOAD NGINX
