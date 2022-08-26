@@ -55,7 +55,11 @@
             {
                 "name": "is_public",
                 "type": "boolean",
-                "default": true
+                "default": true,
+                "help": {
+                    "en": "Makes the wiki accessible directly from the Internet for everyone, without intermediate YunoHost authentication",
+                    "fr": "Rend le wiki accessible directement depuis Internet pour tout le monde, sans authentification YunoHost intermédiaire"
+                }
             },
             {
                 "name": "language",
