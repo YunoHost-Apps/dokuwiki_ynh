@@ -1,5 +1,5 @@
-SOURCE_URL=https://github.com/splitbrain/dokuwiki/archive/release_stable_2020-07-29.tar.gz
-SOURCE_SUM=cc1cd9f00095fea327baa79d8f02c904fe1c37bc3f8fd9999eaf646ee9928884
+SOURCE_URL=https://github.com/splitbrain/dokuwiki/archive/refs/tags/release_2020-07-31a.tar.gz
+SOURCE_SUM=B491E7FB4386F788A121101488096E7C08D0161B389710B0A9E8F4B462A56A4F
 SOURCE_SUM_PRG=sha256sum
 SOURCE_FORMAT=tar.gz
 SOURCE_IN_SUBDIR=true
