@@ -5,7 +5,7 @@ It shall NOT be edited by hand.
 
 # Dokuwiki for YunoHost
 
-[![Integration level](https://dash.yunohost.org/integration/dokuwiki.svg)](https://dash.yunohost.org/appci/app/dokuwiki) ![](https://ci-apps.yunohost.org/ci/badges/dokuwiki.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/dokuwiki.maintain.svg)  
+[![Integration level](https://dash.yunohost.org/integration/dokuwiki.svg)](https://dash.yunohost.org/appci/app/dokuwiki) ![Working status](https://ci-apps.yunohost.org/ci/badges/dokuwiki.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/dokuwiki.maintain.svg)  
 [![Install Dokuwiki with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=dokuwiki)
 
 *[Lire ce readme en français.](./README_fr.md)*
@@ -25,13 +25,14 @@ DokuWiki is a simple to use and highly versatile Open Source wiki software that 
 * During the upgrade, official plugins are also upgraded. We recommend that you should check that they run properly in the administration panel after the upgrade. We cannot know if some plugins are broken...
 
 
-**Shipped version:** 2020.07.29~ynh6
+**Shipped version:** 2020.07.31a~ynh1
+
 
 **Demo:** https://demo.yunohost.org/dokuwiki/doku.php?id=start&do=login&u=demo&p=demo
 
 ## Screenshots
 
-![](./doc/screenshots/DokuWiki_Screenshot.png)
+![Screenshot of Dokuwiki](./doc/screenshots/DokuWiki_Screenshot.png)
 
 ## Disclaimers / important information
 
@@ -41,21 +42,22 @@ DokuWiki is a simple to use and highly versatile Open Source wiki software that 
 
 ## Documentation and resources
 
-* Official app website: https://www.dokuwiki.org
-* Official admin documentation: https://www.dokuwiki.org/manual
-* Upstream app code repository: https://github.com/splitbrain/dokuwiki
-* YunoHost documentation for this app: https://yunohost.org/app_dokuwiki
-* Report a bug: https://github.com/YunoHost-Apps/dokuwiki_ynh/issues
+* Official app website: <https://www.dokuwiki.org>
+* Official admin documentation: <https://www.dokuwiki.org/manual>
+* Upstream app code repository: <https://github.com/splitbrain/dokuwiki>
+* YunoHost documentation for this app: <https://yunohost.org/app_dokuwiki>
+* Report a bug: <https://github.com/YunoHost-Apps/dokuwiki_ynh/issues>
 
 ## Developer info
 
 Please send your pull request to the [testing branch](https://github.com/YunoHost-Apps/dokuwiki_ynh/tree/testing).
 
 To try the testing branch, please proceed like that.
-```
+
+``` bash
 sudo yunohost app install https://github.com/YunoHost-Apps/dokuwiki_ynh/tree/testing --debug
 or
 sudo yunohost app upgrade dokuwiki -u https://github.com/YunoHost-Apps/dokuwiki_ynh/tree/testing --debug
 ```
 
-**More info regarding app packaging:** https://yunohost.org/packaging_apps
+**More info regarding app packaging:** <https://yunohost.org/packaging_apps>
