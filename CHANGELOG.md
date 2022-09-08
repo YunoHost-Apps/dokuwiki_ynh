@@ -10,11 +10,11 @@
 
 ------------
 
-# [2022.07.31~ynh1] - 2022-08-XX
+# [2022.07.31a~ynh1] - 2022-09-XX
 
 ## Added
 
-- New DokuWiki version `2022-07-31 "Igor"`
+- New DokuWiki version `2022-07-31a "Igor"` with **Hotfix 2022-07-31a**
 - New automated tests for "check_process" CI
 
 ## Changed
