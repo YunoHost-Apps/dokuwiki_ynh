@@ -9,7 +9,7 @@
         "es": "Sistema de Wiki de uso sencillicimo y compatible con los estándares",
         "it": "Wiki aderente agli standard, semplice da usare, finalizzato principalmente alla creazione di documentazione di qualsiasi tipo"
     },
-    "version": "2020.07.29~ynh6",
+    "version": "2022.07.31a~ynh1",
     "url": "https://www.dokuwiki.org",
     "upstream": {
         "license": "GPL-2.0-or-later",
@@ -29,12 +29,12 @@
         "email": "opi@zeropi.net"
     }],
     "requirements": {
-        "yunohost": ">= 4.3.0"
+        "yunohost": ">= 11.0.0"
     },
     "multi_instance": true,
     "services": [
         "nginx",
-        "php7.3-fpm"
+        "php8.1-fpm"
     ],
     "arguments": {
         "install" : [
@@ -55,7 +55,11 @@
             {
                 "name": "is_public",
                 "type": "boolean",
-                "default": true
+                "default": true,
+                "help": {
+                    "en": "Makes the wiki accessible directly from the Internet for everyone, without intermediate YunoHost authentication",
+                    "fr": "Rend le wiki accessible directement depuis Internet pour tout le monde, sans authentification YunoHost intermédiaire"
+                }
             },
             {
                 "name": "language",

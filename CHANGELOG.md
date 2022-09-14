@@ -10,6 +10,26 @@
 
 ------------
 
+# [2022.07.31a~ynh1] - 2022-09-XX
+
+## Added
+
+- New DokuWiki version `2022-07-31a "Igor"` with **Hotfix 2022-07-31a**
+- New automated tests for "check_process" CI
+
+## Changed
+
+- Use PHP8.1 as default (PHP7.4 is bulleyes will be EOL "28 Nov 2022" so bump the version)
+- Change method to "automatic upgrade" of plugins
+- Cleanning 'admin permission' handling
+- redo how php is managed: ynh_add_fpm_config + php config files
+- Sync with reference package 'example_ynh'
+
+## Removed
+
+- automatic installation of plugin "logautherror" (not compatible)
+- support for YunoHost below 11 (no time to test against older versions)
+
 # [2020-07-29~ynh4] - 2021-01-19
 
 ### Added

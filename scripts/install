@@ -79,21 +79,22 @@ chmod -R o-rwx "$final_path"
 chown -R $app:www-data "$final_path"
 
 #=================================================
+# PHP-FPM CONFIGURATION
+#=================================================
+ynh_script_progression --message="Configuring PHP-FPM..." --weight=2
+
+# Create a dedicated PHP-FPM config
+fpm_usage=low
+fpm_footprint=low
+ynh_add_fpm_config --usage="$fpm_usage" --footprint="$fpm_footprint"
+
+#=================================================
 # NGINX CONFIGURATION
 #=================================================
 ynh_script_progression --message="Configuring NGINX web server..." --weight=2
 
 # Create a dedicated NGINX config
 ynh_add_nginx_config
-
-#=================================================
-# PHP-FPM CONFIGURATION
-#=================================================
-ynh_script_progression --message="Configuring PHP-FPM..." --weight=2
-
-# Create a dedicated PHP-FPM config
-ynh_add_fpm_config --usage=low --footprint=low
-phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 
 #=================================================
 # SPECIFIC SETUP
@@ -117,8 +118,6 @@ ynh_script_progression --message="Configuring DokuWiki..." --weight=2
 # This File cannot be modified directly by DokuWiki, only by hand or by YunoHost
 # It will only be updated by YunoHost package or directly by adventurous users
 
-# Create the "admin" group and add the "admin" user
-ynh_permission_create --permission "admin" --allowed "$admin_user"
 
 # Customize admin group in case of multiple wiki install managed by different admins
 # dokuwiki.admin; dokuwiki__1.admin; etc
@@ -143,20 +142,20 @@ ynh_add_config --template="../conf/acl.auth.php" --destination="$final_path/conf
 # Other files will be read ony and owned by root.
 # See https://www.dokuwiki.org/install:permissions
 
-cp $final_path/conf/local.php.dist      $final_path/conf/local.php.bak
-cp $final_path/conf/users.auth.php.dist $final_path/conf/users.auth.php
+cp --archive $final_path/conf/local.php.dist      $final_path/conf/local.php.bak
+cp --archive $final_path/conf/users.auth.php.dist $final_path/conf/users.auth.php
 
 # This file might be used by plugins like https://www.dokuwiki.org/plugin:siteexport
 # Create it to be more "user friendly" as over the top security is not the main goal here
 # This file could be use for bad behaviour.
 # See https://www.dokuwiki.org/devel:preload?s[]=preload
-cp $final_path/inc/preload.php.dist     $final_path/inc/preload.php
+cp --archive $final_path/inc/preload.php.dist     $final_path/inc/preload.php
 
 # There is no template .dist provided inside DokuWiki installation folder
 # Create "empty" files to be able to manage linux permissions
 # Files content is taken from an existing DokuWiki installation
-cp ../conf/plugins.local.php            $final_path/conf
-cp ../conf/plugins.local.php            $final_path/conf/plugins.local.php.bak
+cp --archive ../conf/plugins.local.php            $final_path/conf
+cp --archive ../conf/plugins.local.php            $final_path/conf/plugins.local.php.bak
 
 #=================================================
 # STORE THE CHECKSUM OF THE CONFIG FILE
@@ -165,13 +164,6 @@ cp ../conf/plugins.local.php            $final_path/conf/plugins.local.php.bak
 # Calculate and store the config file checksum into the app settings
 #ynh_store_file_checksum --file="$final_path/conf/local.protected.php"
 ### Files '$final_path/conf/local.php' and '$final_path/conf/acl.auth.php' can be modified by user, no need to store checksum as they cannot be overwritten safely by the upgrade script
-
-#=================================================
-# INSTALL LOGAUTHERROR PLUGIN FOR FAIL2BAN
-#=================================================
-ynh_script_progression --message="Installing logautherror plugin for Fail2Ban..." --weight=2
-
-ynh_setup_source --dest_dir="$final_path/lib/plugins/logautherror" --source_id=logautherror
 
 # #=================================================
 # # GENERIC FINALIZATION
@@ -233,6 +225,10 @@ if [ $is_public -eq 1 ]
 then
 	ynh_permission_update --permission="main" --add="visitors"
 fi
+
+# Create the "admin" permission and add the "admin_user" to it
+# More users can be added to the group from the YunoHost webadmin
+ynh_permission_create --permission "admin" --allowed "$admin_user"
 
 #=================================================
 # RELOAD NGINX
