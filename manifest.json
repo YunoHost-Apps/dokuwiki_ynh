@@ -16,7 +16,8 @@
         "website": "https://www.dokuwiki.org",
         "demo": "https://demo.yunohost.org/dokuwiki/doku.php?id=start&do=login&u=demo&p=demo",
         "admindoc": "https://www.dokuwiki.org/manual",
-        "code": "https://github.com/splitbrain/dokuwiki"
+        "code": "https://github.com/splitbrain/dokuwiki",
+        "cpe": "cpe:2.3:a:dokuwiki:dokuwiki"
     },
     "license": "GPL-2.0-or-later",
     "maintainer": {
@@ -24,10 +25,11 @@
         "email": "gofannon@riseup.net"
     },
     "previous_maintainers": [
-    {
-        "name": "opi",
-        "email": "opi@zeropi.net"
-    }],
+        {
+            "name": "opi",
+            "email": "opi@zeropi.net"
+        }
+    ],
     "requirements": {
         "yunohost": ">= 11.0.0"
     },
@@ -37,7 +39,7 @@
         "php8.1-fpm"
     ],
     "arguments": {
-        "install" : [
+        "install": [
             {
                 "name": "domain",
                 "type": "domain"
@@ -68,7 +70,10 @@
                     "en": "Choose the application language",
                     "fr": "Choisissez la langue de l'application"
                 },
-                "choices": ["en", "fr"],
+                "choices": [
+                    "en",
+                    "fr"
+                ],
                 "default": "en"
             }
         ]
