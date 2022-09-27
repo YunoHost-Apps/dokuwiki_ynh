@@ -51,10 +51,6 @@
                 "default": "/dokuwiki"
             },
             {
-                "name": "admin",
-                "type": "user"
-            },
-            {
                 "name": "is_public",
                 "type": "boolean",
                 "default": true,
@@ -75,6 +71,10 @@
                     "fr"
                 ],
                 "default": "en"
+            },
+            {
+                "name": "admin",
+                "type": "user"
             }
         ]
     }

@@ -18,16 +18,16 @@ app=$YNH_APP_INSTANCE_NAME
 
 domain=$(ynh_app_setting_get --app=$app --key=domain)
 path_url=$(ynh_app_setting_get --app=$app --key=path)
+language=$(ynh_app_setting_get --app=$app --key=language)
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
-language=$(ynh_app_setting_get --app=$app --key=language)
-
 fpm_footprint=$(ynh_app_setting_get --app=$app --key=fpm_footprint)
 fpm_usage=$(ynh_app_setting_get --app=$app --key=fpm_usage)
 
 #=================================================
 # CHECK VERSION
 #=================================================
+ynh_script_progression --message="Checking version..." --weight=1
 
 upgrade_type=$(ynh_check_app_version_changed)
 
@@ -39,16 +39,18 @@ ynh_script_progression --message="Backing up the app before upgrading (may take 
 # Backup the current version of the app
 ynh_backup_before_upgrade
 ynh_clean_setup () {
-	# restore it if the upgrade fails
+	# Restore it if the upgrade fails
 	ynh_restore_upgradebackup
 }
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
 
 #=================================================
+# STANDARD UPGRADE STEPS
+#=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensuring downward compatibility..."
+ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
 
 # If final_path doesn't exist, create it
 if [ -z "$final_path" ]; then
@@ -183,11 +185,9 @@ fi
 #=================================================
 ynh_script_progression --message="Making sure dedicated system user exists..." --weight=1
 
-# Create a system user
+# Create a dedicated user (if not existing)
 ynh_system_user_create --username=$app --home_dir="$final_path"
 
-#=================================================
-# STANDARD UPGRADE STEPS
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
@@ -205,14 +205,6 @@ chmod -R o-rwx "$final_path"
 chown -R $app:www-data "$final_path"
 
 #=================================================
-# NGINX CONFIGURATION
-#=================================================
-ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=2
-
-# Create a dedicated NGINX config
-ynh_add_nginx_config
-
-#=================================================
 # UPGRADE DEPENDENCIES
 #=================================================
 ynh_script_progression --message="Upgrading dependencies..." --weight=1
@@ -228,7 +220,17 @@ ynh_script_progression --message="Upgrading PHP-FPM configuration..." --weight=1
 ynh_add_fpm_config --phpversion=$phpversion --usage=$fpm_usage --footprint=$fpm_footprint
 
 #=================================================
+# NGINX CONFIGURATION
+#=================================================
+ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=2
+
+# Create a dedicated NGINX config
+ynh_add_nginx_config
+
+#=================================================
 # SPECIFIC UPGRADE
+#=================================================
+# UPGRADE DOKUWIKI
 #=================================================
 
 if [ "$upgrade_type" == "UPGRADE_APP" ]
@@ -324,61 +326,20 @@ ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_fil
 # Recalculate and store the checksum of the file for the next upgrade.
 ynh_store_file_checksum --file="$final_path/conf/local.protected.php"
 
-# #=================================================
-# # GENERIC FINALIZATION
-# #=================================================
-# # SECURE FILES AND DIRECTORIES
-# #=================================================
-
-# # Try to use "least privilege" to grant minimal access
-# # For details, see https://www.dokuwiki.org/install:permissions
-
-# # Files owned by DokuWiki can just read
-# chown -R root: $final_path
-
-# # DokuWiki needs to write inside these folders. Make "DokuWiki" owner
-# chown $app:root $final_path/{conf,inc}
-
-# # Make "DokuWiki" owner of configuration files that must be writable
-# chown $app:root $final_path/conf/{local.php,local.php.bak,users.auth.php,acl.auth.php,plugins.local.php,plugins.local.php.bak}
-
-# # Usefull for some plugins like https://www.dokuwiki.org/plugin:siteexport
-# # See https://www.dokuwiki.org/devel:preload
-# chown $app:root $final_path/inc/preload.php
-
-# # Grant read-only to all files as files copied above are owned by root by defaut and nginx cannot read them
-# # There are only files in the folder and there are no sublevels. No need to use "find"
-# chmod -R a+r $final_path/{conf,inc}
-
-# # Give write access to "data" and subfolders
-# chown -R $app:root $final_path/data
-# # Remove access to "other"
-# chmod -R o-rwx $final_path/data
-
-# # Allow the web admin panel to run, aka "Extension Manager"
-# chown -R $app:root $final_path/lib/plugins
-# # Allow to install templates
-# chown -R $app:root $final_path/lib/tpl
-
-# # Allow access to public assets like style sheets
-# find $final_path/lib -type f -print0 | xargs -0 chmod 0644
-# find $final_path/lib -type d -print0 | xargs -0 chmod 0755
-# # Using "find" instead of "chmod -R 755" so files does not become executable too
-# # chmod :   -rwxr-xr-x  1 root root  241 May  3 08:36 index.html   => BAD
-# # find  :   -rw-r--r--  1 1001 1002  241 May  3 08:36 index.html   => GOOD
-
 #=================================================
-# SETUP FAIL2BAN
+# GENERIC FINALIZATION
+#=================================================
+# UPGRADE FAIL2BAN
 #=================================================
 ynh_script_progression --message="Reconfiguring Fail2Ban..." --weight=7
 
+# Create a dedicated Fail2Ban config
 ynh_add_fail2ban_config --logpath="/var/log/nginx/$domain-error.log" --failregex="^.*authentication failure. while reading response header from upstream, client: <HOST>,.*POST $path_url.*$" --max_retry=5
-
 
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading NGINX web server..."
+ynh_script_progression --message="Reloading NGINX web server..." --weight=1
 
 ynh_systemd_action --service_name=nginx --action=reload
 
