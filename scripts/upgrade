@@ -143,22 +143,22 @@ if [ ! -f "$final_path/conf/local.php.bak" ]; then
 	# if template exists
 	if [ -f "$final_path/conf/local.php.dist" ]; then
 		# Copy template to create default file
-		cp "$final_path/conf/local.php.dist" "$final_path/conf/local.php.bak"
+		cp --archive "$final_path/conf/local.php.dist" "$final_path/conf/local.php.bak"
 	fi
 fi
 
 if [ ! -f "$final_path/conf/users.auth.php" ]; then
 	if [ -f "$final_path/conf/users.auth.php.dist" ]; then
-		cp $final_path/conf/users.auth.php.dist $final_path/conf/users.auth.php
+		cp --archive $final_path/conf/users.auth.php.dist $final_path/conf/users.auth.php
 	fi
 fi
 
 if [ ! -f "$final_path/conf/plugins.local.php" ]; then
-	cp ../conf/plugins.local.php $final_path/conf
+	cp --archive ../conf/plugins.local.php $final_path/conf
 fi
 
 if [ ! -f "$final_path/conf/plugins.local.php.bak" ]; then
-	cp ../conf/plugins.local.php $final_path/conf/plugins.local.php.bak
+	cp --archive ../conf/plugins.local.php $final_path/conf/plugins.local.php.bak
 fi
 
 
@@ -166,9 +166,17 @@ if [ ! -f "$final_path/inc/preload.php" ]; then
 	# if template exists
 	if [ -f "$final_path/inc/preload.php.dist" ]; then
 		# Copy template to create default file
-		cp "$final_path/inc/preload.php.dist" "$final_path/inc/preload.php"
+		cp --archive "$final_path/inc/preload.php.dist" "$final_path/inc/preload.php"
 	fi
 fi
+
+# purge "LOGAUTHERROR PLUGIN" as not compatible and not maintained anymore
+# See https://www.dokuwiki.org/plugin:logautherror
+if [ -d "$final_path/lib/plugins/logautherror" ]; then
+    ynh_script_progression --message="Purge "LOGAUTHERROR PLUGIN" as not maintained anymore" --weight=1
+    ynh_secure_remove --file "$final_path/lib/plugins/logautherror"
+fi
+
 
 #=================================================
 # CREATE DEDICATED USER
@@ -275,15 +283,27 @@ fi
 
     # TODO Taken from old "upgrade" script. Should check if it is needed and what it does
     # Update all plugins
-    for name_plugin in $(sudo -s cat $final_path/lib/plugins/*/plugin.info.txt | grep url | awk -F ':' '{print $3}');
-    do
-        # Get a official plugin for dokuwiki, not update a no-official
-        wget -nv --quiet "https://github.com/splitbrain/dokuwiki-plugin-$name_plugin/zipball/master" -O "${name_plugin}.zip" -o /dev/null || true
-        if [ -s "${name_plugin}.zip" ]; then
-            unzip ${name_plugin}.zip
-            cp -a splitbrain-dokuwiki-plugin-${name_plugin}*/. "$final_path/lib/plugins/$name_plugin/"
-        fi
-    done
+    ###for name_plugin in $(sudo -s cat $final_path/lib/plugins/*/plugin.info.txt | grep url | awk -F ':' '{print $3}');
+    ###do
+    ###    # Get a official plugin for dokuwiki, not update a no-official
+    ###    wget -nv --quiet "https://github.com/splitbrain/dokuwiki-plugin-$name_plugin/zipball/master" -O "${name_plugin}.zip" -o /dev/null || true
+    ###    if [ -s "${name_plugin}.zip" ]; then
+    ###        unzip ${name_plugin}.zip
+    ###        cp -a splitbrain-dokuwiki-plugin-${name_plugin}*/. "$final_path/lib/plugins/$name_plugin/"
+    ###    fi
+    ###done
+
+    # if "file" exists and is executable
+    # Stolen from https://github.com/YunoHost-Apps/grav_ynh/blob/testing/scripts/upgrade#L189
+    if [ -x "$final_path/bin/plugin.php" ]; then
+        pushd "$final_path"
+            ynh_exec_warn_less ynh_exec_as $app php${YNH_PHP_VERSION} bin/plugin.php --no-colors extension upgrade || ynh_print_warn --message="Automatic plugin upgrade has failed, you can upgrade them from your DokuWiki admin panel."
+        popd
+    else
+        ynh_print_warn --message="Automatic plugin cannot be done, you have to upgrade them from your DokuWiki admin panel."
+    fi
+
+
 fi
 
 #=================================================
@@ -295,10 +315,7 @@ fi
 ynh_backup_if_checksum_is_different --file="$final_path/conf/local.protected.php"
 
 # Always overwrite local file with the one from package.
-cp ../conf/local.protected.php $final_path/conf
-
-# Create the "admin" group and add the "admin" user
-#ynh_permission_create --permission "admin" --allowed "$admin_user"
+cp --archive ../conf/local.protected.php $final_path/conf
 
 # Customize admin group in case of multiple wiki install managed by different admins
 # dokuwiki.admin; dokuwiki__1.admin; etc
@@ -306,13 +323,6 @@ ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_fil
 
 # Recalculate and store the checksum of the file for the next upgrade.
 ynh_store_file_checksum --file="$final_path/conf/local.protected.php"
-
-#=================================================
-# INSTALL LOGAUTHERROR PLUGIN FOR FAIL2BAN
-#=================================================
-ynh_script_progression --message="Upgrading logautherror plugin for Fail2Ban..." --weight=2
-
-ynh_setup_source --dest_dir="$final_path/lib/plugins/logautherror" --source_id=logautherror
 
 # #=================================================
 # # GENERIC FINALIZATION
