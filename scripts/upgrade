@@ -315,22 +315,14 @@ fi
 fi
 
 #=================================================
-# LDAP Configuration
+# UPDATE A CONFIG FILE
 #=================================================
-
-### Verify the checksum of a file, stored by `ynh_store_file_checksum` in the install script.
-### And create a backup of this file if the checksum is different. So the file will be backed up if the admin had modified it.
-ynh_backup_if_checksum_is_different --file="$final_path/conf/local.protected.php"
-
-# Always overwrite local file with the one from package.
-cp --archive ../conf/local.protected.php $final_path/conf
+ynh_script_progression --message="Adding a configuration file..." --weight=2
 
 # Customize admin group in case of multiple wiki install managed by different admins
 # dokuwiki.admin; dokuwiki__1.admin; etc
-ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$final_path/conf/local.protected.php"
+ynh_add_config --template="../conf/local.protected.php" --destination="$final_path/conf/local.protected.php"
 
-# Recalculate and store the checksum of the file for the next upgrade.
-ynh_store_file_checksum --file="$final_path/conf/local.protected.php"
 
 #=================================================
 # GENERIC FINALIZATION
