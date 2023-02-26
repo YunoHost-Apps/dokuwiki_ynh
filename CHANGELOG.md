@@ -10,6 +10,18 @@
 
 ------------
 
+# [2022.07.31a~ynh2] - 2023-02-XX
+
+## Changed
+
+- Apply "default package recommandation" for "example_ynh" package and "YunoHost apps teams"
+- Use helper `ynh_add_config` for the uprgade script too (fix linter warning)
+
+### Fixed
+
+- Bug in upgrade script not writing the php configuration to the right location (and breaking the backup later if DokuWiki has been installed for the for the first time with version `2022.07.31a~ynh1`)
+
+
 # [2022.07.31a~ynh1] - 2022-09-XX
 
 ## Added
