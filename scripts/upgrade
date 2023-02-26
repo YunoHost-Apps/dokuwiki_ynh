@@ -76,6 +76,12 @@ if [ -z "$fpm_usage" ]; then
     ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
 fi
 
+# If phpversion doesn't exist, create it
+if [ -z "$phpversion" ]; then
+    phpversion=$YNH_PHP_VERSION
+    ynh_app_setting_set --app=$app --key=phpversion --value=$phpversion
+fi
+
 # Cleaning legacy permissions
 admin_user=$(ynh_app_setting_get --app=$app --key=admin)
 
@@ -217,7 +223,7 @@ ynh_install_app_dependencies $pkg_dependencies
 ynh_script_progression --message="Upgrading PHP-FPM configuration..." --weight=1
 
 # Create a dedicated PHP-FPM config
-ynh_add_fpm_config --phpversion=$phpversion --usage=$fpm_usage --footprint=$fpm_footprint
+ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
 
 #=================================================
 # NGINX CONFIGURATION
@@ -299,7 +305,7 @@ fi
     # Stolen from https://github.com/YunoHost-Apps/grav_ynh/blob/testing/scripts/upgrade#L189
     if [ -x "$final_path/bin/plugin.php" ]; then
         pushd "$final_path"
-            ynh_exec_warn_less ynh_exec_as $app php${YNH_PHP_VERSION} bin/plugin.php --no-colors extension upgrade || ynh_print_warn --message="Automatic plugin upgrade has failed, you can upgrade them from your DokuWiki admin panel."
+            ynh_exec_warn_less ynh_exec_as $app php$phpversion bin/plugin.php --no-colors extension upgrade || ynh_print_warn --message="Automatic plugin upgrade has failed, you can upgrade them from your DokuWiki admin panel."
         popd
     else
         ynh_print_warn --message="Automatic plugin cannot be done, you have to upgrade them from your DokuWiki admin panel."
