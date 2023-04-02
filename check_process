@@ -1,11 +1,10 @@
 ;; Test complet
-	auto_remove=1
 	; Manifest
 		domain="domain.tld"
 		path="/path"
-		admin="john"
 		is_public=1
 		language=en
+		admin="john"
 	; Checks
 		pkg_linter=1
 		setup_sub_dir=1
@@ -19,6 +18,7 @@
 		upgrade=1	from_commit=f45c459b287c8f045c08e65cea412cfc2cae38f4
 		backup_restore=1
 		multi_instance=1
+		port_already_use=0
 		change_url=1
 		actions=0
 		config_panel=0

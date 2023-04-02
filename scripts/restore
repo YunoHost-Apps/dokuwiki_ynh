@@ -6,6 +6,7 @@
 # IMPORT GENERIC HELPERS
 #=================================================
 
+# Keep this path for calling _common.sh inside the execution's context of backup and restore scripts
 source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
@@ -19,14 +20,13 @@ ynh_abort_if_errors
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading settings..." --weight=2
+ynh_script_progression --message="Loading installation settings..." --weight=2
 
 app=$YNH_APP_INSTANCE_NAME
 
 domain=$(ynh_app_setting_get --app=$app --key=domain)
 path_url=$(ynh_app_setting_get --app=$app --key=path)
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
-
 phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
 fpm_footprint=$(ynh_app_setting_get --app=$app --key=fpm_footprint)
 fpm_usage=$(ynh_app_setting_get --app=$app --key=fpm_usage)
@@ -52,38 +52,13 @@ ynh_system_user_create --username=$app --home_dir="$final_path"
 #=================================================
 # RESTORE THE APP MAIN DIR
 #=================================================
-ynh_script_progression --message="Restoring the app main directory..."
+ynh_script_progression --message="Restoring the app main directory..." --weight=1
 
 ynh_restore_file --origin_path="$final_path"
 
 chmod 750 "$final_path"
 chmod -R o-rwx "$final_path"
 chown -R $app:www-data "$final_path"
-
-# #=================================================
-# # RESTORE USER RIGHTS
-# #=================================================
-
-# # Try to use "least privilege" to grant minimal access
-# # For details, see https://www.dokuwiki.org/install:permissions
-
-# # DokuWiki needs to write inside these folders. Make "DokuWiki" owner
-# chown $app:root $final_path/{conf,inc}
-
-# # Make "DokuWiki" owner of configuration files that must be writable
-# chown $app:root $final_path/conf/{local.php,local.php.bak,users.auth.php,acl.auth.php,plugins.local.php,plugins.local.php.bak}
-
-# # Usefull for some plugins like https://www.dokuwiki.org/plugin:siteexport
-# # See https://www.dokuwiki.org/devel:preload
-# chown $app:root $final_path/inc/preload.php
-
-# # Give write access to "data" and subfolders
-# chown -R $app:root $final_path/data
-
-# # Allow the web admin panel to run, aka "Extension Manager"
-# chown -R $app:root $final_path/lib/plugins
-# # Allow to install templates
-# chown -R $app:root $final_path/lib/tpl
 
 #=================================================
 # RESTORE FAIL2BAN CONFIGURATION
@@ -107,7 +82,7 @@ ynh_install_app_dependencies $pkg_dependencies
 #=================================================
 # RESTORE THE PHP-FPM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Reconfiguring PHP-FPM..." --weight=5
+ynh_script_progression --message="Restoring the PHP-FPM configuration..." --weight=5
 
 ynh_restore_file --origin_path="/etc/php/$phpversion/fpm/pool.d/$app.conf"
 
@@ -127,7 +102,7 @@ ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 #=================================================
 # RELOAD NGINX AND PHP-FPM
 #=================================================
-ynh_script_progression --message="Reloading NGINX web server and PHP-FPM.." --weight=2
+ynh_script_progression --message="Reloading NGINX web server and PHP-FPM..." --weight=2
 
 ynh_systemd_action --service_name=php$phpversion-fpm --action=reload
 ynh_systemd_action --service_name=nginx --action=reload

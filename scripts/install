@@ -22,9 +22,9 @@ ynh_abort_if_errors
 
 domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
-admin_user=$YNH_APP_ARG_ADMIN
 is_public=$YNH_APP_ARG_IS_PUBLIC
 language=$YNH_APP_ARG_LANGUAGE
+admin=$YNH_APP_ARG_ADMIN
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -49,6 +49,8 @@ ynh_app_setting_set --app=$app --key=path --value=$path_url
 ynh_app_setting_set --app=$app --key=language --value=$language
 
 #=================================================
+# STANDARD MODIFICATIONS
+#=================================================
 # INSTALL DEPENDENCIES
 #=================================================
 ynh_script_progression --message="Installing dependencies..." --weight=1
@@ -63,8 +65,6 @@ ynh_script_progression --message="Configuring system user..." --weight=2
 # Create a system user
 ynh_system_user_create --username=$app --home_dir="$final_path"
 
-#=================================================
-# STANDARD MODIFICATIONS
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
@@ -99,9 +99,9 @@ ynh_add_nginx_config
 #=================================================
 # SPECIFIC SETUP
 #=================================================
-# CUSTOMIZE DOKUWIKI
+# ADD A CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring DokuWiki..." --weight=2
+ynh_script_progression --message="Adding a configuration file..." --weight=2
 
 # Loading order of configuration files
 #
@@ -137,6 +137,7 @@ ynh_add_config --template="../conf/acl.auth.php" --destination="$final_path/conf
 #=================================================
 # CREATE DEFAULT FILES
 #=================================================
+ynh_script_progression --message="Creating default files..." --weight=1
 
 # For securing DokuWiki installation, create default files that will be writable in the "conf" folder.
 # Other files will be read ony and owned by root.
@@ -158,61 +159,13 @@ cp --archive ../conf/plugins.local.php            $final_path/conf
 cp --archive ../conf/plugins.local.php            $final_path/conf/plugins.local.php.bak
 
 #=================================================
-# STORE THE CHECKSUM OF THE CONFIG FILE
-#=================================================
-
-# Calculate and store the config file checksum into the app settings
-#ynh_store_file_checksum --file="$final_path/conf/local.protected.php"
-### Files '$final_path/conf/local.php' and '$final_path/conf/acl.auth.php' can be modified by user, no need to store checksum as they cannot be overwritten safely by the upgrade script
-
-# #=================================================
-# # GENERIC FINALIZATION
-# #=================================================
-# # SECURE FILES AND DIRECTORIES
-# #=================================================
-
-# # Try to use "least privilege" to grant minimal access
-# # For details, see https://www.dokuwiki.org/install:permissions
-
-# # Files owned by DokuWiki can just read
-# chown -R root: $final_path
-
-# # DokuWiki needs to write inside these folders. Make "DokuWiki" owner
-# chown $app:root $final_path/{conf,inc}
-
-# # Make "DokuWiki" owner of configuration files that must be writable
-# chown $app:root $final_path/conf/{local.php,local.php.bak,users.auth.php,acl.auth.php,plugins.local.php,plugins.local.php.bak}
-
-# # Usefull for some plugins like https://www.dokuwiki.org/plugin:siteexport
-# # See https://www.dokuwiki.org/devel:preload
-# chown $app:root $final_path/inc/preload.php
-
-# # Grant read-only to all files as files copied above are owned by root by defaut and nginx cannot read them
-# # There are only files in the folder and there are no sublevels. No need to use "find"
-# chmod -R a+r $final_path/{conf,inc}
-
-# # Give write access to "data" and subfolders
-# chown -R $app:root $final_path/data
-# # Remove access to "other"
-# chmod -R o-rwx $final_path/data
-
-# # Allow the web admin panel to run, aka "Extension Manager"
-# chown -R $app:root $final_path/lib/plugins
-# # Allow to install templates
-# chown -R $app:root $final_path/lib/tpl
-
-# # Allow access to public assets like style sheets
-# find $final_path/lib -type f -print0 | xargs -0 chmod 0644
-# find $final_path/lib -type d -print0 | xargs -0 chmod 0755
-# # Using "find" instead of "chmod -R 755" so files does not become executable too
-# # chmod :   -rwxr-xr-x  1 root root  241 May  3 08:36 index.html   => BAD
-# # find  :   -rw-r--r--  1 1001 1002  241 May  3 08:36 index.html   => GOOD
-
+# GENERIC FINALIZATION
 #=================================================
 # SETUP FAIL2BAN
 #=================================================
 ynh_script_progression --message="Configuring Fail2Ban..." --weight=7
 
+# Create a dedicated Fail2Ban config
 ynh_add_fail2ban_config --logpath="/var/log/nginx/$domain-error.log" --failregex="^.*authentication failure. while reading response header from upstream, client: <HOST>,.*POST $path_url.*$" --max_retry=5
 
 #=================================================
@@ -223,17 +176,19 @@ ynh_script_progression --message="Configuring permissions..." --weight=2
 # Make app public if necessary
 if [ $is_public -eq 1 ]
 then
+	# Everyone can access the app.
+	# The "main" permission is automatically created before the install script.
 	ynh_permission_update --permission="main" --add="visitors"
 fi
 
-# Create the "admin" permission and add the "admin_user" to it
+# Create the "admin" permission and add the "admin" to it
 # More users can be added to the group from the YunoHost webadmin
-ynh_permission_create --permission "admin" --allowed "$admin_user"
+ynh_permission_create --permission "admin" --allowed "$admin"
 
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading NGINX web server..."
+ynh_script_progression --message="Reloading NGINX web server..." --weight=1
 
 ynh_systemd_action --service_name=nginx --action=reload
 
