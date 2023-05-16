@@ -1,0 +1,73 @@
+packaging_format = 2
+
+id = "dokuwiki"
+name = "Dokuwiki"
+description.en = "Lightweight, simple to use and highly versatile wiki"
+description.fr = "Wiki léger, simple à utiliser et très polyvalent"
+description.de = "Standardkonformes, einfach zu benutzendes Wiki und zielt hauptsächlich auf die Erstellung von Dokumentationen aller Art ab"
+description.es = "Sistema de Wiki de uso sencillicimo y compatible con los estándares"
+description.it = "Wiki aderente agli standard, semplice da usare, finalizzato principalmente alla creazione di documentazione di qualsiasi tipo"
+
+version = "2023.04.04a~ynh1"
+
+maintainers = ["Gofannon"]
+
+[upstream]
+license = "GPL-2.0-or-later"
+website = "https://www.dokuwiki.org"
+demo = "https://demo.yunohost.org/dokuwiki/doku.php?id=start&do=login&u=demo&p=demo"
+admindoc = "https://www.dokuwiki.org/manual"
+code = "https://github.com/splitbrain/dokuwiki"
+
+[integration]
+yunohost = ">= 11.1.19"
+architectures = "all"
+multi_instance = true
+ldap = true
+sso = true
+disk = "50M"
+ram.build = "200M"
+ram.runtime = "50M"
+
+[install]
+    [install.domain]
+    type = "domain"
+
+    [install.path]
+    type = "path"
+    default = "/dokuwiki"
+
+    [install.init_main_permission]
+    help.en = "Makes the wiki accessible directly from the Internet for everyone, without intermediate YunoHost authentication"
+    help.fr = "Rend le wiki accessible directement depuis Internet pour tout le monde, sans authentification YunoHost intermédiaire"
+    type = "group"
+    default = "visitors"
+
+    [install.language]
+    ask.en = "Choose the application language"
+    ask.fr = "Choisissez la langue de l'application"
+    type = "string"
+    choices = ["en", "fr"]
+    default = "en"
+
+    [install.admin]
+    type = "user"
+
+[resources]
+        [resources.sources.main]
+        url = "https://github.com/dokuwiki/dokuwiki/releases/download/release-2023-04-04a/dokuwiki-2023-04-04a.tgz"
+        sha256 = "153c99cf42b9068b1ec21a2c765b862a44b374ad2f1a39223f5511a982b160bb"
+        autoupdate.strategy = "latest_github_tag"
+
+    [resources.system_user]
+
+    [resources.install_dir]
+
+    [resources.permissions]
+    main.url = "/"
+    admin.url = "/admin"
+    admin.show_tile = false
+    admin.allowed = "admins"
+
+    [resources.apt]
+    packages = "php8.1-xml php8.1-ldap php8.1-gd php8.1-cli"
