@@ -26,19 +26,13 @@ DokuWiki est un logiciel wiki Open Source simple à utiliser et très polyvalent
 * Lors de la mise à jour, les plugins officiels sont également mis à jour. Nous vous recommandons toutefois de vérifier le bon fonctionnement des plugins dans le panneau d'administration après cette opération. Nous ne pouvons pas savoir si des plugins spéciaux posent problèmes...
 
 
-**Version incluse :** 2022.07.31a~ynh2
+**Version incluse :** 2023.04.04a~ynh1
 
 **Démo :** https://demo.yunohost.org/dokuwiki/doku.php?id=start&do=login&u=demo&p=demo
 
 ## Captures d’écran
 
 ![Capture d’écran de Dokuwiki](./doc/screenshots/DokuWiki_Screenshot.png)
-
-## Avertissements / informations importantes
-
-## Limitations
-
-* Impossible d'ajouter et d'utiliser les utilisateurs internes de DokuWiki, seulement ceux de YunoHost (travail nécessaire pour [authchained plugin](https://www.dokuwiki.org/plugin:authchained))
 
 ## Documentations et ressources
 
