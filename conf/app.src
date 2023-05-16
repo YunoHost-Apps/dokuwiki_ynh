@@ -1,5 +1,0 @@
-SOURCE_URL=https://download.dokuwiki.org/src/dokuwiki/dokuwiki-2022-07-31a.tgz
-SOURCE_SUM=48ed2ae11fa4a0ae8338af9aedc837601b34e21c0be15d16e2d6228ca7a91f23
-SOURCE_SUM_PRG=sha256sum
-SOURCE_FORMAT=tar.gz
-SOURCE_IN_SUBDIR=true

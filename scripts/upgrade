@@ -10,91 +10,34 @@ source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# LOAD SETTINGS
-#=================================================
-ynh_script_progression --message="Loading installation settings..." --weight=2
-
-app=$YNH_APP_INSTANCE_NAME
-
-domain=$(ynh_app_setting_get --app=$app --key=domain)
-path_url=$(ynh_app_setting_get --app=$app --key=path)
-final_path=$(ynh_app_setting_get --app=$app --key=final_path)
-phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
-language=$(ynh_app_setting_get --app=$app --key=language)
-
-fpm_footprint=$(ynh_app_setting_get --app=$app --key=fpm_footprint)
-fpm_usage=$(ynh_app_setting_get --app=$app --key=fpm_usage)
-
-#=================================================
 # CHECK VERSION
 #=================================================
 
 upgrade_type=$(ynh_check_app_version_changed)
 
 #=================================================
-# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
-#=================================================
-ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=9
-
-# Backup the current version of the app
-ynh_backup_before_upgrade
-ynh_clean_setup () {
-	# restore it if the upgrade fails
-	ynh_restore_upgradebackup
-}
-# Exit if an error occurs during the execution of the script
-ynh_abort_if_errors
-
+# STANDARD UPGRADE STEPS
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensuring downward compatibility..."
-
-# If final_path doesn't exist, create it
-if [ -z "$final_path" ]; then
-	final_path=/var/www/$app
-	ynh_app_setting_set --app=$app --key=final_path --value=$final_path
-fi
-
-# language default value, if not set
-if [ -z "$language" ]; then
-	language='en'
-	ynh_app_setting_set --app=$app --key=language --value=$language
-fi
+ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
 
 # If fpm_footprint doesn't exist, create it
-if [ -z "$fpm_footprint" ]; then
+if [ -z "${fpm_footprint:-}" ]; then
     fpm_footprint=low
     ynh_app_setting_set --app=$app --key=fpm_footprint --value=$fpm_footprint
 fi
 
+# If fpm_free_footprint doesn't exist, create it
+if [ -z "${fpm_free_footprint:-}" ]; then
+    fpm_free_footprint=0
+    ynh_app_setting_set --app=$app --key=fpm_free_footprint --value=$fpm_free_footprint
+fi
+
 # If fpm_usage doesn't exist, create it
-if [ -z "$fpm_usage" ]; then
+if [ -z "${fpm_usage:-}" ]; then
     fpm_usage=low
     ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
-fi
-
-# Cleaning legacy permissions
-admin_user=$(ynh_app_setting_get --app=$app --key=admin)
-
-if [ -n "$admin_user" ]; then
-	# Removing skipped/unprotected_uris under certain conditions, remove the visitors group added during the migration process of 3.7
-	# Remove skipped_uris. If the app was public, add visitors again to the main permission
-	if ynh_permission_has_user --permission=admin --user="$admin_user"
-	then
-		echo "permission admin already exist. Nothing to do"
-	else
-		ynh_permission_create --permission "admin" --allowed "$admin_user"
-	fi
-	# Remove legacy admin setting
-	ynh_app_setting_delete --app=$app --key=admin
-fi
-
-# Cleaning legacy permissions
-if ynh_legacy_permissions_exists; then
-	ynh_legacy_permissions_delete_all
-
-	ynh_app_setting_delete --app=$app --key=is_public
 fi
 
 # Yunohost specific configuration, if it isn't exist already
@@ -116,22 +59,22 @@ fi
 # Create an empty configuration file if it does not exist
 # This file will be overwritten anyway later in the part "# LDAP Configuration"
 # The file is created here to prevent a failure of the helper `ynh_backup_if_checksum_is_different`
-if [ ! -f "$final_path/conf/local.protected.php" ]; then
-	touch $final_path/conf/local.protected.php
+if [ ! -f "$install_dir/conf/local.protected.php" ]; then
+	touch $install_dir/conf/local.protected.php
 fi
 
 # Do not overwrite existing dokuwiki configuration as it could have user customization's and settings.
 # Create file if it does not exist
-if [ ! -f "$final_path/conf/local.php" ]; then
+if [ ! -f "$install_dir/conf/local.php" ]; then
 	# Set the default "language"
-	ynh_add_config --template="../conf/local.php" --destination="$final_path/conf/local.php"
+	ynh_add_config --template="../conf/local.php" --destination="$install_dir/conf/local.php"
 fi
 
 # Do not overwrite existing ACL configuration file as it could have user customization's and settings.
 # Create file if it does not exist
 # See https://www.dokuwiki.org/acl#background_info
-if [ ! -f "$final_path/conf/acl.auth.php" ]; then
-	ynh_add_config --template="../conf/acl.auth.php" --destination="$final_path/conf/acl.auth.php"
+if [ ! -f "$install_dir/conf/acl.auth.php" ]; then
+	ynh_add_config --template="../conf/acl.auth.php" --destination="$install_dir/conf/acl.auth.php"
 fi
 
 # For securing DokuWiki installation, create default files that will be writable in the "conf" folder.
@@ -139,55 +82,44 @@ fi
 # See https://www.dokuwiki.org/install:permissions
 
 # If file does not exists
-if [ ! -f "$final_path/conf/local.php.bak" ]; then
+if [ ! -f "$install_dir/conf/local.php.bak" ]; then
 	# if template exists
-	if [ -f "$final_path/conf/local.php.dist" ]; then
+	if [ -f "$install_dir/conf/local.php.dist" ]; then
 		# Copy template to create default file
-		cp --archive "$final_path/conf/local.php.dist" "$final_path/conf/local.php.bak"
+		cp --archive "$install_dir/conf/local.php.dist" "$install_dir/conf/local.php.bak"
 	fi
 fi
 
-if [ ! -f "$final_path/conf/users.auth.php" ]; then
-	if [ -f "$final_path/conf/users.auth.php.dist" ]; then
-		cp --archive $final_path/conf/users.auth.php.dist $final_path/conf/users.auth.php
+if [ ! -f "$install_dir/conf/users.auth.php" ]; then
+	if [ -f "$install_dir/conf/users.auth.php.dist" ]; then
+		cp --archive $install_dir/conf/users.auth.php.dist $install_dir/conf/users.auth.php
 	fi
 fi
 
-if [ ! -f "$final_path/conf/plugins.local.php" ]; then
-	cp --archive ../conf/plugins.local.php $final_path/conf
+if [ ! -f "$install_dir/conf/plugins.local.php" ]; then
+	cp --archive ../conf/plugins.local.php $install_dir/conf
 fi
 
-if [ ! -f "$final_path/conf/plugins.local.php.bak" ]; then
-	cp --archive ../conf/plugins.local.php $final_path/conf/plugins.local.php.bak
+if [ ! -f "$install_dir/conf/plugins.local.php.bak" ]; then
+	cp --archive ../conf/plugins.local.php $install_dir/conf/plugins.local.php.bak
 fi
 
 
-if [ ! -f "$final_path/inc/preload.php" ]; then
+if [ ! -f "$install_dir/inc/preload.php" ]; then
 	# if template exists
-	if [ -f "$final_path/inc/preload.php.dist" ]; then
+	if [ -f "$install_dir/inc/preload.php.dist" ]; then
 		# Copy template to create default file
-		cp --archive "$final_path/inc/preload.php.dist" "$final_path/inc/preload.php"
+		cp --archive "$install_dir/inc/preload.php.dist" "$install_dir/inc/preload.php"
 	fi
 fi
 
 # purge "LOGAUTHERROR PLUGIN" as not compatible and not maintained anymore
 # See https://www.dokuwiki.org/plugin:logautherror
-if [ -d "$final_path/lib/plugins/logautherror" ]; then
+if [ -d "$install_dir/lib/plugins/logautherror" ]; then
     ynh_script_progression --message="Purge "LOGAUTHERROR PLUGIN" as not maintained anymore" --weight=1
-    ynh_secure_remove --file "$final_path/lib/plugins/logautherror"
+    ynh_secure_remove --file "$install_dir/lib/plugins/logautherror"
 fi
 
-
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Making sure dedicated system user exists..." --weight=1
-
-# Create a system user
-ynh_system_user_create --username=$app --home_dir="$final_path"
-
-#=================================================
-# STANDARD UPGRADE STEPS
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
@@ -197,38 +129,27 @@ then
 	ynh_script_progression --message="Upgrading source files..." --weight=2
 
 	# Download, check integrity, uncompress and patch the source from app.src
-	ynh_setup_source --dest_dir="$final_path"
+	ynh_setup_source --dest_dir="$install_dir"
 fi
 
-chmod 750 "$final_path"
-chmod -R o-rwx "$final_path"
-chown -R $app:www-data "$final_path"
+chmod -R o-rwx "$install_dir"
+chown -R $app:www-data "$install_dir"
 
 #=================================================
-# NGINX CONFIGURATION
+# REAPPLY SYSTEM CONFIGURATIONS
 #=================================================
-ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=2
+ynh_script_progression --message="Upgrading system configurations related to $app..." --weight=1
+
+# Create a dedicated PHP-FPM config
+ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
 
 # Create a dedicated NGINX config
 ynh_add_nginx_config
 
 #=================================================
-# UPGRADE DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Upgrading dependencies..." --weight=1
-
-ynh_install_app_dependencies $pkg_dependencies
-
-#=================================================
-# PHP-FPM CONFIGURATION
-#=================================================
-ynh_script_progression --message="Upgrading PHP-FPM configuration..." --weight=1
-
-# Create a dedicated PHP-FPM config
-ynh_add_fpm_config --phpversion=$phpversion --usage=$fpm_usage --footprint=$fpm_footprint
-
-#=================================================
 # SPECIFIC UPGRADE
+#=================================================
+# UPGRADE DOKUWIKI
 #=================================================
 
 if [ "$upgrade_type" == "UPGRADE_APP" ]
@@ -237,11 +158,11 @@ then
 
     # Remove upgrade notification inside Dokuwiki's admin panel
     # See https://www.dokuwiki.org/update_check
-    touch $final_path/doku.php
+    touch $install_dir/doku.php
 
     # Remove files not used anymore after upgrade
     # See https://www.dokuwiki.org/install:unused_files
-    if [ -f "$final_path/data/deleted.files" ]; then
+    if [ -f "$install_dir/data/deleted.files" ]; then
 
         # Feed output of grep[...] line by line to 'ynh_secure_remove'
         # 'ynh_secure_remove' can only work file by file. Cannot work with a list
@@ -269,7 +190,7 @@ then
             if [ -f "$line" ]; then
                 ynh_secure_remove --file "$line"
             fi
-        done < <(grep --null --extended-regexp --invert-match '^($|#)' "$final_path/data/deleted.files" | xargs --null --max-args=1 || true)
+        done < <(grep --null --extended-regexp --invert-match '^($|#)' "$install_dir/data/deleted.files" | xargs --null --max-args=1 || true)
         #    ^ ^  First < is redirection, second is process substitution.
         # Source: https://tldp.org/LDP/abs/html/process-sub.html
 
@@ -283,104 +204,45 @@ fi
 
     # TODO Taken from old "upgrade" script. Should check if it is needed and what it does
     # Update all plugins
-    ###for name_plugin in $(sudo -s cat $final_path/lib/plugins/*/plugin.info.txt | grep url | awk -F ':' '{print $3}');
+    ###for name_plugin in $(sudo -s cat $install_dir/lib/plugins/*/plugin.info.txt | grep url | awk -F ':' '{print $3}');
     ###do
     ###    # Get a official plugin for dokuwiki, not update a no-official
     ###    wget -nv --quiet "https://github.com/splitbrain/dokuwiki-plugin-$name_plugin/zipball/master" -O "${name_plugin}.zip" -o /dev/null || true
     ###    if [ -s "${name_plugin}.zip" ]; then
     ###        unzip ${name_plugin}.zip
-    ###        cp -a splitbrain-dokuwiki-plugin-${name_plugin}*/. "$final_path/lib/plugins/$name_plugin/"
+    ###        cp -a splitbrain-dokuwiki-plugin-${name_plugin}*/. "$install_dir/lib/plugins/$name_plugin/"
     ###    fi
     ###done
 
     # if "file" exists and is executable
     # Stolen from https://github.com/YunoHost-Apps/grav_ynh/blob/testing/scripts/upgrade#L189
-    if [ -x "$final_path/bin/plugin.php" ]; then
-        pushd "$final_path"
-            ynh_exec_warn_less ynh_exec_as $app php${YNH_PHP_VERSION} bin/plugin.php --no-colors extension upgrade || ynh_print_warn --message="Automatic plugin upgrade has failed, you can upgrade them from your DokuWiki admin panel."
+    if [ -x "$install_dir/bin/plugin.php" ]; then
+        pushd "$install_dir"
+            ynh_exec_warn_less ynh_exec_as $app php$phpversion bin/plugin.php --no-colors extension upgrade || ynh_print_warn --message="Automatic plugin upgrade has failed, you can upgrade them from your DokuWiki admin panel."
         popd
     else
         ynh_print_warn --message="Automatic plugin cannot be done, you have to upgrade them from your DokuWiki admin panel."
     fi
-
-
 fi
 
 #=================================================
-# LDAP Configuration
+# UPDATE A CONFIG FILE
 #=================================================
-
-### Verify the checksum of a file, stored by `ynh_store_file_checksum` in the install script.
-### And create a backup of this file if the checksum is different. So the file will be backed up if the admin had modified it.
-ynh_backup_if_checksum_is_different --file="$final_path/conf/local.protected.php"
-
-# Always overwrite local file with the one from package.
-cp --archive ../conf/local.protected.php $final_path/conf
+ynh_script_progression --message="Adding a configuration file..." --weight=2
 
 # Customize admin group in case of multiple wiki install managed by different admins
 # dokuwiki.admin; dokuwiki__1.admin; etc
-ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$final_path/conf/local.protected.php"
-
-# Recalculate and store the checksum of the file for the next upgrade.
-ynh_store_file_checksum --file="$final_path/conf/local.protected.php"
-
-# #=================================================
-# # GENERIC FINALIZATION
-# #=================================================
-# # SECURE FILES AND DIRECTORIES
-# #=================================================
-
-# # Try to use "least privilege" to grant minimal access
-# # For details, see https://www.dokuwiki.org/install:permissions
-
-# # Files owned by DokuWiki can just read
-# chown -R root: $final_path
-
-# # DokuWiki needs to write inside these folders. Make "DokuWiki" owner
-# chown $app:root $final_path/{conf,inc}
-
-# # Make "DokuWiki" owner of configuration files that must be writable
-# chown $app:root $final_path/conf/{local.php,local.php.bak,users.auth.php,acl.auth.php,plugins.local.php,plugins.local.php.bak}
-
-# # Usefull for some plugins like https://www.dokuwiki.org/plugin:siteexport
-# # See https://www.dokuwiki.org/devel:preload
-# chown $app:root $final_path/inc/preload.php
-
-# # Grant read-only to all files as files copied above are owned by root by defaut and nginx cannot read them
-# # There are only files in the folder and there are no sublevels. No need to use "find"
-# chmod -R a+r $final_path/{conf,inc}
-
-# # Give write access to "data" and subfolders
-# chown -R $app:root $final_path/data
-# # Remove access to "other"
-# chmod -R o-rwx $final_path/data
-
-# # Allow the web admin panel to run, aka "Extension Manager"
-# chown -R $app:root $final_path/lib/plugins
-# # Allow to install templates
-# chown -R $app:root $final_path/lib/tpl
-
-# # Allow access to public assets like style sheets
-# find $final_path/lib -type f -print0 | xargs -0 chmod 0644
-# find $final_path/lib -type d -print0 | xargs -0 chmod 0755
-# # Using "find" instead of "chmod -R 755" so files does not become executable too
-# # chmod :   -rwxr-xr-x  1 root root  241 May  3 08:36 index.html   => BAD
-# # find  :   -rw-r--r--  1 1001 1002  241 May  3 08:36 index.html   => GOOD
+ynh_add_config --template="../conf/local.protected.php" --destination="$install_dir/conf/local.protected.php"
 
 #=================================================
-# SETUP FAIL2BAN
+# GENERIC FINALIZATION
+#=================================================
+# UPGRADE FAIL2BAN
 #=================================================
 ynh_script_progression --message="Reconfiguring Fail2Ban..." --weight=7
 
-ynh_add_fail2ban_config --logpath="/var/log/nginx/$domain-error.log" --failregex="^.*authentication failure. while reading response header from upstream, client: <HOST>,.*POST $path_url.*$" --max_retry=5
-
-
-#=================================================
-# RELOAD NGINX
-#=================================================
-ynh_script_progression --message="Reloading NGINX web server..."
-
-ynh_systemd_action --service_name=nginx --action=reload
+# Create a dedicated Fail2Ban config
+ynh_add_fail2ban_config --logpath="/var/log/nginx/$domain-error.log" --failregex="^.*authentication failure. while reading response header from upstream, client: <HOST>,.*POST $path.*$" --max_retry=5
 
 #=================================================
 # END OF SCRIPT

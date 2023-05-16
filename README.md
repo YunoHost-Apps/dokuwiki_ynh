@@ -5,7 +5,8 @@ It shall NOT be edited by hand.
 
 # Dokuwiki for YunoHost
 
-[![Integration level](https://dash.yunohost.org/integration/dokuwiki.svg)](https://dash.yunohost.org/appci/app/dokuwiki) ![Working status](https://ci-apps.yunohost.org/ci/badges/dokuwiki.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/dokuwiki.maintain.svg)  
+[![Integration level](https://dash.yunohost.org/integration/dokuwiki.svg)](https://dash.yunohost.org/appci/app/dokuwiki) ![Working status](https://ci-apps.yunohost.org/ci/badges/dokuwiki.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/dokuwiki.maintain.svg)
+
 [![Install Dokuwiki with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=dokuwiki)
 
 *[Lire ce readme en français.](./README_fr.md)*
@@ -25,20 +26,13 @@ DokuWiki is a simple to use and highly versatile Open Source wiki software that 
 * During the upgrade, official plugins are also upgraded. We recommend that you should check that they run properly in the administration panel after the upgrade. We cannot know if some plugins are broken...
 
 
-**Shipped version:** 2022.07.31a~ynh1
-
+**Shipped version:** 2023.04.04a~ynh1
 
 **Demo:** https://demo.yunohost.org/dokuwiki/doku.php?id=start&do=login&u=demo&p=demo
 
 ## Screenshots
 
 ![Screenshot of Dokuwiki](./doc/screenshots/DokuWiki_Screenshot.png)
-
-## Disclaimers / important information
-
-## Limitations
-
-* Cannot create or login with DokuWiki internal users, only users from YunoHost (Work needed for [authchained plugin](https://www.dokuwiki.org/plugin:authchained))
 
 ## Documentation and resources
 
