@@ -10,40 +10,10 @@ source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# LOAD SETTINGS
-#=================================================
-#REMOVEME? ynh_script_progression --message="Loading installation settings..." --weight=2
-
-#REMOVEME? app=$YNH_APP_INSTANCE_NAME
-
-#REMOVEME? domain=$(ynh_app_setting_get --app=$app --key=domain)
-#REMOVEME? path=$(ynh_app_setting_get --app=$app --key=path)
-#REMOVEME? language=$(ynh_app_setting_get --app=$app --key=language)
-#REMOVEME? #REMOVEME? install_dir=$(ynh_app_setting_get --app=$app --key=install_dir)
-#REMOVEME? phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
-#REMOVEME? fpm_footprint=$(ynh_app_setting_get --app=$app --key=fpm_footprint)
-#REMOVEME? fpm_usage=$(ynh_app_setting_get --app=$app --key=fpm_usage)
-
-#=================================================
 # CHECK VERSION
 #=================================================
-ynh_script_progression --message="Checking version..." --weight=1
 
 upgrade_type=$(ynh_check_app_version_changed)
-
-#=================================================
-# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
-#=================================================
-#REMOVEME? ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=9
-
-# Backup the current version of the app
-#REMOVEME? ynh_backup_before_upgrade
-#REMOVEME? ynh_clean_setup () {
-	# Restore it if the upgrade fails
-#REMOVEME? 	ynh_restore_upgradebackup
-}
-# Exit if an error occurs during the execution of the script
-#REMOVEME? ynh_abort_if_errors
 
 #=================================================
 # STANDARD UPGRADE STEPS
@@ -51,59 +21,6 @@ upgrade_type=$(ynh_check_app_version_changed)
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
 ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
-
-# If install_dir doesn't exist, create it
-if [ -z "$install_dir" ]; then
-#REMOVEME? 	install_dir=/var/www/$app
-#REMOVEME? 	ynh_app_setting_set --app=$app --key=install_dir --value=$install_dir
-fi
-
-# language default value, if not set
-if [ -z "$language" ]; then
-	language='en'
-	ynh_app_setting_set --app=$app --key=language --value=$language
-fi
-
-# If fpm_footprint doesn't exist, create it
-if [ -z "$fpm_footprint" ]; then
-    fpm_footprint=low
-    ynh_app_setting_set --app=$app --key=fpm_footprint --value=$fpm_footprint
-fi
-
-# If fpm_usage doesn't exist, create it
-if [ -z "$fpm_usage" ]; then
-    fpm_usage=low
-    ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
-fi
-
-# If phpversion doesn't exist, create it
-if [ -z "$phpversion" ]; then
-    phpversion=$YNH_PHP_VERSION
-    ynh_app_setting_set --app=$app --key=phpversion --value=$phpversion
-fi
-
-# Cleaning legacy permissions
-#REMOVEME? admin_user=$(ynh_app_setting_get --app=$app --key=admin)
-
-if [ -n "$admin_user" ]; then
-	# Removing skipped/unprotected_uris under certain conditions, remove the visitors group added during the migration process of 3.7
-	# Remove skipped_uris. If the app was public, add visitors again to the main permission
-	if ynh_permission_has_user --permission=admin --user="$admin_user"
-	then
-		echo "permission admin already exist. Nothing to do"
-	else
-#REMOVEME? 		ynh_permission_create --permission "admin" --allowed "$admin_user"
-	fi
-	# Remove legacy admin setting
-	ynh_app_setting_delete --app=$app --key=admin
-fi
-
-# Cleaning legacy permissions
-#REMOVEME? if ynh_legacy_permissions_exists; then
-#REMOVEME? 	ynh_legacy_permissions_delete_all
-
-	ynh_app_setting_delete --app=$app --key=is_public
-fi
 
 # Yunohost specific configuration, if it isn't exist already
 
@@ -182,17 +99,8 @@ fi
 # See https://www.dokuwiki.org/plugin:logautherror
 if [ -d "$install_dir/lib/plugins/logautherror" ]; then
     ynh_script_progression --message="Purge "LOGAUTHERROR PLUGIN" as not maintained anymore" --weight=1
-#REMOVEME?     ynh_secure_remove --file "$install_dir/lib/plugins/logautherror"
+    ynh_secure_remove --file "$install_dir/lib/plugins/logautherror"
 fi
-
-
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-#REMOVEME? ynh_script_progression --message="Making sure dedicated system user exists..." --weight=1
-
-# Create a dedicated user (if not existing)
-#REMOVEME? ynh_system_user_create --username=$app --home_dir="$install_dir"
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
@@ -206,16 +114,8 @@ then
 	ynh_setup_source --dest_dir="$install_dir"
 fi
 
-chmod 750 "$install_dir"
 chmod -R o-rwx "$install_dir"
 chown -R $app:www-data "$install_dir"
-
-#=================================================
-# UPGRADE DEPENDENCIES
-#=================================================
-#REMOVEME? ynh_script_progression --message="Upgrading dependencies..." --weight=1
-
-#REMOVEME? ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
 # PHP-FPM CONFIGURATION
@@ -223,7 +123,7 @@ chown -R $app:www-data "$install_dir"
 ynh_script_progression --message="Upgrading PHP-FPM configuration..." --weight=1
 
 # Create a dedicated PHP-FPM config
-ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
+ynh_add_fpm_config --usage=low --footprint=low
 
 #=================================================
 # NGINX CONFIGURATION
@@ -323,7 +223,6 @@ ynh_script_progression --message="Adding a configuration file..." --weight=2
 # dokuwiki.admin; dokuwiki__1.admin; etc
 ynh_add_config --template="../conf/local.protected.php" --destination="$install_dir/conf/local.protected.php"
 
-
 #=================================================
 # GENERIC FINALIZATION
 #=================================================
@@ -333,13 +232,6 @@ ynh_script_progression --message="Reconfiguring Fail2Ban..." --weight=7
 
 # Create a dedicated Fail2Ban config
 ynh_add_fail2ban_config --logpath="/var/log/nginx/$domain-error.log" --failregex="^.*authentication failure. while reading response header from upstream, client: <HOST>,.*POST $path.*$" --max_retry=5
-
-#=================================================
-# RELOAD NGINX
-#=================================================
-#REMOVEME? ynh_script_progression --message="Reloading NGINX web server..." --weight=1
-
-#REMOVEME? ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # END OF SCRIPT
