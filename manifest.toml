@@ -17,7 +17,7 @@ license = "GPL-2.0-or-later"
 website = "https://www.dokuwiki.org"
 demo = "https://demo.yunohost.org/dokuwiki/doku.php?id=start&do=login&u=demo&p=demo"
 admindoc = "https://www.dokuwiki.org/manual"
-code = "https://github.com/splitbrain/dokuwiki"
+code = "https://github.com/dokuwiki/dokuwiki"
 
 [integration]
 yunohost = ">= 11.1.19"
@@ -55,7 +55,7 @@ ram.runtime = "50M"
 
 [resources]
         [resources.sources.main]
-        url = "https://github.com/splitbrain/dokuwiki/archive/refs/tags/release-2023-04-04.tar.gz"
+        url = "https://github.com/dokuwiki/dokuwiki/archive/refs/tags/release-2023-04-04a.tar.gz"
         sha256 = "99cd9af97631cec43fb3f6c7c1c1e61a6f5ec0600d1611ce897b3419da18f9a6"
         autoupdate.strategy = "latest_github_tag"
 
