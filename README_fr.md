@@ -38,8 +38,7 @@ DokuWiki est un logiciel wiki Open Source simple à utiliser et très polyvalent
 
 * Site officiel de l’app : <https://www.dokuwiki.org>
 * Documentation officielle de l’admin : <https://www.dokuwiki.org/manual>
-* Dépôt de code officiel de l’app : <https://github.com/splitbrain/dokuwiki>
-* Documentation YunoHost pour cette app : <https://yunohost.org/app_dokuwiki>
+* Dépôt de code officiel de l’app : <https://github.com/dokuwiki/dokuwiki>
 * Signaler un bug : <https://github.com/YunoHost-Apps/dokuwiki_ynh/issues>
 
 ## Informations pour les développeurs
