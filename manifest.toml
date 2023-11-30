@@ -8,7 +8,7 @@ description.de = "Standardkonformes, einfach zu benutzendes Wiki und zielt haupt
 description.es = "Sistema de Wiki de uso sencillicimo y compatible con los estándares"
 description.it = "Wiki aderente agli standard, semplice da usare, finalizzato principalmente alla creazione di documentazione di qualsiasi tipo"
 
-version = "2023.04.04a~ynh1"
+version = "2023.04.04a~ynh2"
 
 maintainers = ["Gofannon"]
 
@@ -70,4 +70,4 @@ ram.runtime = "50M"
     admin.allowed = "admins"
 
     [resources.apt]
-    packages = "php8.1-xml, php8.1-ldap, php8.1-gd, php8.1-cli"
+    packages = "php8.1-xml, php8.1-ldap, php8.1-gd, php8.1-cli, php8.1-mbstring"
