@@ -70,4 +70,4 @@ ram.runtime = "50M"
     admin.allowed = "admins"
 
     [resources.apt]
-    packages = "php8.1-xml, php8.1-ldap, php8.1-gd, php8.1-cli"
+    packages = "php8.1-xml, php8.1-ldap, php8.1-gd, php8.1-cli, php8.1-mbstring"
