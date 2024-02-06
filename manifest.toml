@@ -58,8 +58,8 @@ ram.runtime = "50M"
 
 [resources]
         [resources.sources.main]
-        url = "https://github.com/dokuwiki/dokuwiki/releases/download/release-2023-04-04a/dokuwiki-2023-04-04a.tgz"
-        sha256 = "153c99cf42b9068b1ec21a2c765b862a44b374ad2f1a39223f5511a982b160bb"
+        url = "https://github.com/dokuwiki/dokuwiki/archive/refs/tags/release-2024-02-06.tar.gz"
+        sha256 = "fa5d890587d90e808402a95b581ccd173765045df23bd48f834b09a9df7252ed"
         autoupdate.strategy = "latest_github_tag"
 
     [resources.system_user]
