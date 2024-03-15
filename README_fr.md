@@ -25,10 +25,9 @@ DokuWiki est un logiciel wiki Open Source simple à utiliser et très polyvalent
 * Droits d'édition par défaut du wiki définis en lecture seule afin que les invités ne puissent éditer les pages. (Nécessaire surtout lorsque le wiki est public pour éviter le spam et le vandalisme. Peut être changé depuis la partie administration du wiki)
 * Lors de la mise à jour, les plugins officiels sont également mis à jour. Nous vous recommandons toutefois de vérifier le bon fonctionnement des plugins dans le panneau d'administration après cette opération. Nous ne pouvons pas savoir si des plugins spéciaux posent problèmes...
 
+**Version incluse :** 2024.02.06a~ynh1
 
-**Version incluse :** 2023.04.04a~ynh2
-
-**Démo :** https://demo.yunohost.org/dokuwiki/doku.php?id=start&do=login&u=demo&p=demo
+**Démo :** <https://demo.yunohost.org/dokuwiki/doku.php?id=start&do=login&u=demo&p=demo>
 
 ## Captures d’écran
 
@@ -36,11 +35,11 @@ DokuWiki est un logiciel wiki Open Source simple à utiliser et très polyvalent
 
 ## Documentations et ressources
 
-* Site officiel de l’app : <https://www.dokuwiki.org>
-* Documentation officielle de l’admin : <https://www.dokuwiki.org/manual>
-* Dépôt de code officiel de l’app : <https://github.com/dokuwiki/dokuwiki>
-* YunoHost Store: <https://apps.yunohost.org/app/dokuwiki>
-* Signaler un bug : <https://github.com/YunoHost-Apps/dokuwiki_ynh/issues>
+- Site officiel de l’app : <https://www.dokuwiki.org>
+- Documentation officielle de l’admin : <https://www.dokuwiki.org/manual>
+- Dépôt de code officiel de l’app : <https://github.com/dokuwiki/dokuwiki>
+- YunoHost Store : <https://apps.yunohost.org/app/dokuwiki>
+- Signaler un bug : <https://github.com/YunoHost-Apps/dokuwiki_ynh/issues>
 
 ## Informations pour les développeurs
 
@@ -48,7 +47,7 @@ Merci de faire vos pull request sur la [branche testing](https://github.com/Yuno
 
 Pour essayer la branche testing, procédez comme suit.
 
-``` bash
+```bash
 sudo yunohost app install https://github.com/YunoHost-Apps/dokuwiki_ynh/tree/testing --debug
 ou
 sudo yunohost app upgrade dokuwiki -u https://github.com/YunoHost-Apps/dokuwiki_ynh/tree/testing --debug
