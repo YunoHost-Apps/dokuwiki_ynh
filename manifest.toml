@@ -61,7 +61,7 @@ ram.runtime = "50M"
         url = "https://github.com/dokuwiki/dokuwiki/archive/refs/tags/release-2024-02-06a.tar.gz"
         sha256 = "3d025174169bb15be36b934f63974772b8caa9ea23e1b0c93f897396642b1697"
         autoupdate.strategy = "latest_github_tag"
-        autoupdate.version_regex = "^release-(.*)$"
+        autoupdate.version_regex = "^release-(.*)tar.gz$"
 
     [resources.system_user]
 
