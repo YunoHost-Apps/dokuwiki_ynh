@@ -25,10 +25,9 @@ DokuWiki is a simple to use and highly versatile Open Source wiki software that 
 * Default authorization is set as read only so guest people cannot edit pages. (Especially needed if wiki is public to avoid spam and defacing. Can be changed from admin panel)
 * During the upgrade, official plugins are also upgraded. We recommend that you should check that they run properly in the administration panel after the upgrade. We cannot know if some plugins are broken...
 
+**Shipped version:** 2024.02.06a~ynh1
 
-**Shipped version:** 2023.04.04a~ynh2
-
-**Demo:** https://demo.yunohost.org/dokuwiki/doku.php?id=start&do=login&u=demo&p=demo
+**Demo:** <https://demo.yunohost.org/dokuwiki/doku.php?id=start&do=login&u=demo&p=demo>
 
 ## Screenshots
 
@@ -36,11 +35,11 @@ DokuWiki is a simple to use and highly versatile Open Source wiki software that 
 
 ## Documentation and resources
 
-* Official app website: <https://www.dokuwiki.org>
-* Official admin documentation: <https://www.dokuwiki.org/manual>
-* Upstream app code repository: <https://github.com/dokuwiki/dokuwiki>
-* YunoHost Store: <https://apps.yunohost.org/app/dokuwiki>
-* Report a bug: <https://github.com/YunoHost-Apps/dokuwiki_ynh/issues>
+- Official app website: <https://www.dokuwiki.org>
+- Official admin documentation: <https://www.dokuwiki.org/manual>
+- Upstream app code repository: <https://github.com/dokuwiki/dokuwiki>
+- YunoHost Store: <https://apps.yunohost.org/app/dokuwiki>
+- Report a bug: <https://github.com/YunoHost-Apps/dokuwiki_ynh/issues>
 
 ## Developer info
 
@@ -48,7 +47,7 @@ Please send your pull request to the [testing branch](https://github.com/YunoHos
 
 To try the testing branch, please proceed like that.
 
-``` bash
+```bash
 sudo yunohost app install https://github.com/YunoHost-Apps/dokuwiki_ynh/tree/testing --debug
 or
 sudo yunohost app upgrade dokuwiki -u https://github.com/YunoHost-Apps/dokuwiki_ynh/tree/testing --debug
