@@ -26,6 +26,32 @@ ynh_app_setting_set --app=$app --key=fpm_free_footprint --value=$fpm_free_footpr
 ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
 
 #=================================================
+# STORE DEFAULT VALUES FOR "ACTION SCRIPTS"
+#=================================================
+
+# Needed for "upgrade" to know which backend to set back after overwriting "local.protected.php"
+# Can be changed by action script "internal_users"
+auth_backend='authldap'   # Default backend is LDAP with Yunohost, 'authldap' for DokuWiki
+ynh_app_setting_set $app auth_backend $auth_backend
+
+# Force disable the 'is_internal_users' feature
+ynh_app_setting_set $app is_internal_users 0
+
+#=================================================
+# STORE DEFAULT VALUES FOR "ACTION SCRIPTS"
+#=================================================
+
+# Needed for "upgrade" to know which backend to set back after overwriting "local.protected.php"
+# Can be changed by action script "internal_users"
+auth_backend='authldap'   # Default backend is LDAP with Yunohost, 'authldap' for DokuWiki
+ynh_app_setting_set $app auth_backend $auth_backend
+
+# Force disable the 'is_internal_users' feature
+ynh_app_setting_set $app is_internal_users 0
+
+#=================================================
+# STANDARD MODIFICATIONS
+#=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 ynh_script_progression --message="Setting up source files..." --weight=2
@@ -69,6 +95,10 @@ ynh_script_progression --message="Adding a configuration file..." --weight=2
 # This File cannot be modified directly by DokuWiki, only by hand or by YunoHost
 # It will only be updated by YunoHost package or directly by adventurous users
 
+# Set the authentification backend
+ynh_replace_string "__YNH_AUTH_BACKEND__" "$auth_backend" "$final_path/conf/local.protected.php"
+# Set the "admin" user
+ynh_replace_string --match_string="__YNH_ADMIN_USER__" --replace_string="$admin"    --target_file="$final_path/conf/local.protected.php"
 
 # Customize admin group in case of multiple wiki install managed by different admins
 # dokuwiki.admin; dokuwiki__1.admin; etc
@@ -76,6 +106,7 @@ ynh_add_config --template="../conf/local.protected.php" --destination="$install_
 
 # This file might be modified by DokuWiki admin panel or by plugins
 # It will not be modified by Yunohost in order to keep user settings
+cp ../conf/local.php $final_path/conf
 
 # Set the "language"
 ynh_add_config --template="../conf/local.php" --destination="$install_dir/conf/local.php"
@@ -83,7 +114,7 @@ ynh_add_config --template="../conf/local.php" --destination="$install_dir/conf/l
 # Restrict user rights by enforcing "read-only" mode for all users
 # See https://www.dokuwiki.org/acl#background_info
 # Default is "8"
-ynh_add_config --template="../conf/acl.auth.php" --destination="$install_dir/conf/acl.auth.php"
+cp ../conf/acl.auth.php $final_path/conf
 
 #=================================================
 # CREATE DEFAULT FILES

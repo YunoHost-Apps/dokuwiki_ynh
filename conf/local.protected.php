@@ -2,7 +2,7 @@
 /**
  * This file is used for configuration settings which cannot be modified by Dokuwiki admin panel
  * See here for explanations : https://www.dokuwiki.org/config
- * 
+ *
  * Yunohost dedicated settings are stored here in order to be able to upgrade the Yunohost package safely latter for Yunohost packager ( Yeah \o/ )
  *
  * You should not modify this file direclty as it will be overwritten by Yunohost package
@@ -12,7 +12,7 @@
 
 /* Authentication Settings */
 $conf['useacl']      = 1;                //Use Access Control Lists to restrict access?
-$conf['authtype']    = 'authldap';       //which authentication backend should be used
+$conf['authtype']    = '__YNH_AUTH_BACKEND__'; //which authentication backend should be used
 $conf['passcrypt']   = 'sha1';           //Used crypt method (smd5,md5,sha1,ssha,crypt,mysql,my411)
 $conf['superuser']   = '@__APP__.admin'; //The admin can be user or @group or comma separated list user1,@group1,user2
 $conf['manager']     = '@__APP__.admin'; //The manager can be user or @group or comma separated list user1,@group1,user2
@@ -22,11 +22,13 @@ $conf['plugin']['authldap']['server']      = 'localhost';
 $conf['plugin']['authldap']['port']        = 389;
 $conf['plugin']['authldap']['version']     = 3;
 $conf['plugin']['authldap']['usertree']    = 'ou=users,dc=yunohost,dc=org';
-$conf['plugin']['authldap']['grouptree']   = 'ou=permission,dc=yunohost,dc=org';
-$conf['plugin']['authldap']['userfilter']  = '(&(objectClass=posixAccount)(uid=%{user})(permission=cn=__APP__.main,ou=permission,dc=yunohost,dc=org))';
-$conf['plugin']['authldap']['groupfilter'] = '(&(objectClass=posixGroup)(memberUid=%{user}))';
-#$conf['plugin']['authldap']['debug']      = 1;
+$conf['plugin']['authldap']['userfilter']  = '(&(uid=%{user})(objectClass=posixAccount))';
+# no groups
+#$conf['plugin']['authldap']['grouptree']   = 'ou=Group, dc=server, dc=tld';
+#$conf['plugin']['authldap']['groupfilter'] = '(&(objectClass=posixGroup)(|(gidNumber=%{gid})(memberUID=%{user})))';
 
+// Authchained plugin preload configuration. Can be used by 'internal_users' action script
+$conf['plugin']['authchained']['authtypes'] = 'authldap:authplain';
 
 /* Advanced Settings */
 $conf['updatecheck'] = 0;                //automatically check for new releases?
