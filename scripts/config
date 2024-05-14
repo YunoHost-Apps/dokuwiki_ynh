@@ -8,6 +8,7 @@
 
 source _common.sh
 source /usr/share/yunohost/helpers
+
 # Load common variables for all scripts.
 #source _variables TODO: remove ?
 

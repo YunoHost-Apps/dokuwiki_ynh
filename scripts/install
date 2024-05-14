@@ -10,45 +10,20 @@ source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# MANAGE SCRIPT FAILURE
-#=================================================
-
-# Exit if an error occurs during the execution of the script
-ynh_abort_if_errors
-
-#=================================================
 # RETRIEVE ARGUMENTS FROM THE MANIFEST
 #=================================================
 
-domain=$YNH_APP_ARG_DOMAIN
-path_url=$YNH_APP_ARG_PATH
-admin=$YNH_APP_ARG_ADMIN
-is_public=$YNH_APP_ARG_IS_PUBLIC
-language=$YNH_APP_ARG_LANGUAGE
-
-app=$YNH_APP_INSTANCE_NAME
-
-#=================================================
-# CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
-#=================================================
-ynh_script_progression --message="Validating installation parameters..." --weight=2
-
-final_path=/var/www/$app
-test ! -e "$final_path" || ynh_die --message="This path already contains a folder"
-
-# Register (book) web path
-ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
+fpm_footprint="low"
+fpm_free_footprint=0
+fpm_usage="low"
 
 #=================================================
 # STORE SETTINGS FROM MANIFEST
 #=================================================
-ynh_script_progression --message="Storing installation settings..." --weight=2
 
-ynh_app_setting_set --app=$app --key=domain --value=$domain
-ynh_app_setting_set --app=$app --key=path --value=$path_url
-ynh_app_setting_set --app=$app --key=admin --value=$admin
-ynh_app_setting_set --app=$app --key=is_public --value=$is_public
-ynh_app_setting_set --app=$app --key=language --value=$language
+ynh_app_setting_set --app=$app --key=fpm_footprint --value=$fpm_footprint
+ynh_app_setting_set --app=$app --key=fpm_free_footprint --value=$fpm_free_footprint
+ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
 
 #=================================================
 # STORE DEFAULT VALUES FOR "ACTION SCRIPTS"
@@ -81,42 +56,29 @@ ynh_app_setting_set $app is_internal_users 0
 #=================================================
 ynh_script_progression --message="Setting up source files..." --weight=2
 
-ynh_app_setting_set --app=$app --key=final_path --value=$final_path
 # Download, check integrity, uncompress and patch the source from app.src
-ynh_setup_source --dest_dir="$final_path"
+ynh_setup_source --dest_dir="$install_dir"
+
+chmod -R o-rwx "$install_dir"
+chown -R $app:www-data "$install_dir"
 
 #=================================================
-# NGINX CONFIGURATION
+# SYSTEM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring nginx web server..." --weight=2
+ynh_script_progression --message="Adding system configurations related to $app..." --weight=1
 
-### `ynh_add_nginx_config` will use the file conf/nginx.conf
+# Create a dedicated PHP-FPM config
+ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
 
-# Create a dedicated nginx config
+# Create a dedicated NGINX config
 ynh_add_nginx_config
-
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Configuring system user..." --weight=2
-
-# Create a system user
-ynh_system_user_create --username=$app
-
-#=================================================
-# PHP-FPM CONFIGURATION
-#=================================================
-ynh_script_progression --message="Configuring php-fpm..." --weight=2
-
-# Create a dedicated php-fpm config
-ynh_add_fpm_config
 
 #=================================================
 # SPECIFIC SETUP
 #=================================================
-# CUSTOMIZE DOKUWIKI
+# ADD A CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring dokuwiki..." --weight=2
+ynh_script_progression --message="Adding a configuration file..." --weight=2
 
 # Loading order of configuration files
 #
@@ -129,24 +91,25 @@ ynh_script_progression --message="Configuring dokuwiki..." --weight=2
 # See https://www.dokuwiki.org/plugin:config#protecting_settings
 
 
-### Copy Yunohost specific configuration
-# This File cannot be modified directly by Dokuwiki, only by hand or by Yunohost
-# It will only be updated by Yunohost package or directly by adventurous users
-cp ../conf/local.protected.php $final_path/conf
+### Copy YunoHost specific configuration
+# This File cannot be modified directly by DokuWiki, only by hand or by YunoHost
+# It will only be updated by YunoHost package or directly by adventurous users
 
 # Set the authentification backend
 ynh_replace_string "__YNH_AUTH_BACKEND__" "$auth_backend" "$final_path/conf/local.protected.php"
 # Set the "admin" user
 ynh_replace_string --match_string="__YNH_ADMIN_USER__" --replace_string="$admin"    --target_file="$final_path/conf/local.protected.php"
 
+# Customize admin group in case of multiple wiki install managed by different admins
+# dokuwiki.admin; dokuwiki__1.admin; etc
+ynh_add_config --template="../conf/local.protected.php" --destination="$install_dir/conf/local.protected.php"
 
-# This file might be modified by dokuwiki admin panel or by plugins
+# This file might be modified by DokuWiki admin panel or by plugins
 # It will not be modified by Yunohost in order to keep user settings
 cp ../conf/local.php $final_path/conf
 
 # Set the "language"
-ynh_replace_string --match_string="__YNH_LANGUAGE__"   --replace_string="$language" --target_file="$final_path/conf/local.php"
-
+ynh_add_config --template="../conf/local.php" --destination="$install_dir/conf/local.php"
 
 # Restrict user rights by enforcing "read-only" mode for all users
 # See https://www.dokuwiki.org/acl#background_info
@@ -156,95 +119,36 @@ cp ../conf/acl.auth.php $final_path/conf
 #=================================================
 # CREATE DEFAULT FILES
 #=================================================
+ynh_script_progression --message="Creating default files..." --weight=1
 
 # For securing DokuWiki installation, create default files that will be writable in the "conf" folder.
 # Other files will be read ony and owned by root.
 # See https://www.dokuwiki.org/install:permissions
 
-cp $final_path/conf/local.php.dist      $final_path/conf/local.php.bak
-cp $final_path/conf/users.auth.php.dist $final_path/conf/users.auth.php
+cp --archive $install_dir/conf/local.php.dist      $install_dir/conf/local.php.bak
+cp --archive $install_dir/conf/users.auth.php.dist $install_dir/conf/users.auth.php
 
 # This file might be used by plugins like https://www.dokuwiki.org/plugin:siteexport
 # Create it to be more "user friendly" as over the top security is not the main goal here
 # This file could be use for bad behaviour.
 # See https://www.dokuwiki.org/devel:preload?s[]=preload
-cp $final_path/inc/preload.php.dist     $final_path/inc/preload.php
+cp --archive $install_dir/inc/preload.php.dist     $install_dir/inc/preload.php
 
 # There is no template .dist provided inside DokuWiki installation folder
 # Create "empty" files to be able to manage linux permissions
 # Files content is taken from an existing DokuWiki installation
-cp ../conf/plugins.local.php            $final_path/conf
-cp ../conf/plugins.local.php            $final_path/conf/plugins.local.php.bak
-
-#=================================================
-# STORE THE CHECKSUM OF THE CONFIG FILE
-#=================================================
-
-# Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum --file="$final_path/conf/local.protected.php"
-### Files '$final_path/conf/local.php' and '$final_path/conf/acl.auth.php' can be modified by user, no need to store checksum as they cannot be overwritten safely by the upgrade script
+cp --archive ../conf/plugins.local.php            $install_dir/conf
+cp --archive ../conf/plugins.local.php            $install_dir/conf/plugins.local.php.bak
 
 #=================================================
 # GENERIC FINALIZATION
 #=================================================
-# SECURE FILES AND DIRECTORIES
+# SETUP FAIL2BAN
 #=================================================
+ynh_script_progression --message="Configuring Fail2Ban..." --weight=7
 
-# Try to use "least privilege" to grant minimal access
-# For details, see https://www.dokuwiki.org/install:permissions
-
-# Files owned by DokuWiki can just read
-chown -R root: $final_path
-
-# DokuWiki needs to write inside these folders. Make "DokuWiki" owner
-chown $app:root $final_path/{conf,inc}
-
-# Make "DokuWiki" owner of configuration files that must be writable
-chown $app:root $final_path/conf/{local.php,local.php.bak,users.auth.php,acl.auth.php,plugins.local.php,plugins.local.php.bak}
-
-# Usefull for some plugins like https://www.dokuwiki.org/plugin:siteexport
-# See https://www.dokuwiki.org/devel:preload
-chown $app:root $final_path/inc/preload.php
-
-# Grant read-only to all files as files copied above are owned by root by defaut and nginx cannot read them
-# There are only files in the folder and there are no sublevels. No need to use "find"
-chmod -R a+r $final_path/{conf,inc}
-
-# Give write access to "data" and subfolders
-chown -R $app:root $final_path/data
-# Remove access to "other"
-chmod -R o-rwx $final_path/data
-
-# Allow the web admin panel to run, aka "Extension Manager"
-chown -R $app:root $final_path/lib/plugins
-# Allow to install templates
-chown -R $app:root $final_path/lib/tpl
-
-# Allow access to public assets like style sheets
-find $final_path/lib -type f -print0 | xargs -0 chmod 0644
-find $final_path/lib -type d -print0 | xargs -0 chmod 0755
-# Using "find" instead of "chmod -R 755" so files does not become executable too
-# chmod :   -rwxr-xr-x  1 root root  241 May  3 08:36 index.html   => BAD
-# find  :   -rw-r--r--  1 1001 1002  241 May  3 08:36 index.html   => GOOD
-
-#=================================================
-# SETUP SSOWAT
-#=================================================
-ynh_script_progression --message="Configuring SSOwat..."
-
-# Make app public if necessary
-if [ $is_public -eq 1 ]
-then
-	# unprotected_uris allows SSO credentials to be passed anyway.
-	ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
-fi
-
-#=================================================
-# RELOAD NGINX
-#=================================================
-ynh_script_progression --message="Reloading nginx web server..."
-
-ynh_systemd_action --service_name=nginx --action=reload
+# Create a dedicated Fail2Ban config
+ynh_add_fail2ban_config --logpath="/var/log/nginx/$domain-error.log" --failregex="^.*authentication failure. while reading response header from upstream, client: <HOST>,.*POST $path.*$" --max_retry=5
 
 #=================================================
 # END OF SCRIPT
