@@ -10,7 +10,7 @@ description.it = "Wiki aderente agli standard, semplice da usare, finalizzato pr
 
 version = "2024.02.06a~ynh1"
 
-maintainers = [""]
+maintainers = []
 
 [upstream]
 license = "GPL-2.0-or-later"
