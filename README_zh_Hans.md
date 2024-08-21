@@ -5,7 +5,7 @@
 
 # YunoHost 上的 Dokuwiki
 
-[![集成程度](https://dash.yunohost.org/integration/dokuwiki.svg)](https://dash.yunohost.org/appci/app/dokuwiki) ![工作状态](https://ci-apps.yunohost.org/ci/badges/dokuwiki.status.svg) ![维护状态](https://ci-apps.yunohost.org/ci/badges/dokuwiki.maintain.svg)
+[![集成程度](https://dash.yunohost.org/integration/dokuwiki.svg)](https://ci-apps.yunohost.org/ci/apps/dokuwiki/) ![工作状态](https://ci-apps.yunohost.org/ci/badges/dokuwiki.status.svg) ![维护状态](https://ci-apps.yunohost.org/ci/badges/dokuwiki.maintain.svg)
 
 [![使用 YunoHost 安装 Dokuwiki](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=dokuwiki)
 
