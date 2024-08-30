@@ -1,43 +1,31 @@
 #!/bin/bash
 
-#=================================================
-# GENERIC START
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
-#=================================================
-# CHECK VERSION
-#=================================================
+ynh_app_setting_set_default --key=php_upload_max_filesize --value=25M
 
-upgrade_type=$(ynh_check_app_version_changed)
-
-#=================================================
-# STANDARD UPGRADE STEPS
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
+ynh_script_progression "Ensuring downward compatibility..."
 
 # If fpm_footprint doesn't exist, create it
 if [ -z "${fpm_footprint:-}" ]; then
     fpm_footprint=low
-    ynh_app_setting_set --app=$app --key=fpm_footprint --value=$fpm_footprint
+#REMOVEME? Everything about fpm_footprint is removed in helpers2.1... |     ynh_app_setting_set --key=fpm_footprint --value=$fpm_footprint
 fi
 
 # If fpm_free_footprint doesn't exist, create it
 if [ -z "${fpm_free_footprint:-}" ]; then
     fpm_free_footprint=0
-    ynh_app_setting_set --app=$app --key=fpm_free_footprint --value=$fpm_free_footprint
+#REMOVEME? Everything about fpm_free_footprint is removed in helpers2.1... |     ynh_app_setting_set --key=fpm_free_footprint --value=$fpm_free_footprint
 fi
 
 # If fpm_usage doesn't exist, create it
 if [ -z "${fpm_usage:-}" ]; then
     fpm_usage=low
-    ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
+#REMOVEME? Everything about fpm_usage is removed in helpers2.1... |     ynh_app_setting_set --key=fpm_usage --value=$fpm_usage
 fi
 
 # Yunohost specific configuration, if it isn't exist already
@@ -67,14 +55,14 @@ fi
 # Create file if it does not exist
 if [ ! -f "$install_dir/conf/local.php" ]; then
 	# Set the default "language"
-	ynh_add_config --template="../conf/local.php" --destination="$install_dir/conf/local.php"
+	ynh_config_add --template="local.php" --destination="$install_dir/conf/local.php"
 fi
 
 # Do not overwrite existing ACL configuration file as it could have user customization's and settings.
 # Create file if it does not exist
 # See https://www.dokuwiki.org/acl#background_info
 if [ ! -f "$install_dir/conf/acl.auth.php" ]; then
-	ynh_add_config --template="../conf/acl.auth.php" --destination="$install_dir/conf/acl.auth.php"
+	ynh_config_add --template="acl.auth.php" --destination="$install_dir/conf/acl.auth.php"
 fi
 
 # For securing DokuWiki installation, create default files that will be writable in the "conf" folder.
@@ -104,7 +92,6 @@ if [ ! -f "$install_dir/conf/plugins.local.php.bak" ]; then
 	cp --archive ../conf/plugins.local.php $install_dir/conf/plugins.local.php.bak
 fi
 
-
 if [ ! -f "$install_dir/inc/preload.php" ]; then
 	# if template exists
 	if [ -f "$install_dir/inc/preload.php.dist" ]; then
@@ -116,45 +103,44 @@ fi
 # purge "LOGAUTHERROR PLUGIN" as not compatible and not maintained anymore
 # See https://www.dokuwiki.org/plugin:logautherror
 if [ -d "$install_dir/lib/plugins/logautherror" ]; then
-    ynh_script_progression --message="Purge "LOGAUTHERROR PLUGIN" as not maintained anymore" --weight=1
-    ynh_secure_remove --file "$install_dir/lib/plugins/logautherror"
+    ynh_script_progression "Purge "LOGAUTHERROR PLUGIN" as not maintained anymore"
+    ynh_safe_rm "$install_dir/lib/plugins/logautherror"
 fi
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 
-if [ "$upgrade_type" == "UPGRADE_APP" ]
+# FIXME: this is still supported but the recommendation is now to *always* re-setup the app sources wether or not the upstream sources changed
+if ynh_app_upstream_version_changed
 then
-	ynh_script_progression --message="Upgrading source files..." --weight=2
+	ynh_script_progression "Upgrading source files..."
 
 	# Download, check integrity, uncompress and patch the source from app.src
 	ynh_setup_source --dest_dir="$install_dir"
 fi
 
-chmod -R o-rwx "$install_dir"
-chown -R $app:www-data "$install_dir"
-
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod -R o-rwx "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app:www-data "$install_dir"
 #=================================================
 # REAPPLY SYSTEM CONFIGURATIONS
 #=================================================
-ynh_script_progression --message="Upgrading system configurations related to $app..." --weight=1
+ynh_script_progression "Upgrading system configurations related to $app..."
 
 # Create a dedicated PHP-FPM config
-ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
+ynh_config_add_phpfpm
 
 # Create a dedicated NGINX config
-ynh_add_nginx_config
+ynh_config_add_nginx
 
-#=================================================
-# SPECIFIC UPGRADE
 #=================================================
 # UPGRADE DOKUWIKI
 #=================================================
 
-if [ "$upgrade_type" == "UPGRADE_APP" ]
+# FIXME: this is still supported but the recommendation is now to *always* re-setup the app sources wether or not the upstream sources changed
+if ynh_app_upstream_version_changed
 then
-    ynh_script_progression --message="Upgrading DokuWiki..." --weight=7
+    ynh_script_progression "Upgrading DokuWiki..."
 
     # Remove upgrade notification inside Dokuwiki's admin panel
     # See https://www.dokuwiki.org/update_check
@@ -164,8 +150,8 @@ then
     # See https://www.dokuwiki.org/install:unused_files
     if [ -f "$install_dir/data/deleted.files" ]; then
 
-        # Feed output of grep[...] line by line to 'ynh_secure_remove'
-        # 'ynh_secure_remove' can only work file by file. Cannot work with a list
+        # Feed output of grep[...] line by line to 'ynh_safe_rm '
+        # 'ynh_safe_rm ' can only work file by file. Cannot work with a list
         # This is a (complicated) workaround this limitation
         while IFS= read -r line; do
 
@@ -177,18 +163,18 @@ then
             ### 673
             #
             # Spam sample:
-                #Attention : /!\ Packager ! You provided more than one argument to ynh_secure_remove but it will be ignored... Use this helper with one argument at time.
+                #Attention : /!\ Packager ! You provided more than one argument to ynh_safe_rm but it will be ignored... Use this helper with one argument at time.
                 #Info : 'inc/parser/spamcheck.php' wasn't deleted because it doesn't exist.
-                #Attention : /!\ Packager ! You provided more than one argument to ynh_secure_remove but it will be ignored... Use this helper with one argument at time.
-                #Attention : /!\ Packager ! You provided more than one argument to ynh_secure_remove but it will be ignored... Use this helper with one argument at time.
+                #Attention : /!\ Packager ! You provided more than one argument to ynh_safe_rm but it will be ignored... Use this helper with one argument at time.
+                #Attention : /!\ Packager ! You provided more than one argument to ynh_safe_rm but it will be ignored... Use this helper with one argument at time.
                 #Info : 'lib/images/favicon.ico' wasn't deleted because it doesn't exist.
                 #Info : 'lib/images/thumbup.gif' wasn't deleted because it doesn't exist.
-                #Attention : /!\ Packager ! You provided more than one argument to ynh_secure_remove but it will be ignored... Use this helper with one argument at time.
+                #Attention : /!\ Packager ! You provided more than one argument to ynh_safe_rm but it will be ignored... Use this helper with one argument at time.
                 #Info : 'lib/images/toolbar/code.png' wasn't deleted because it doesn't exist.
-                #Attention : /!\ Packager ! You provided more than one argument to ynh_secure_remove but it will be ignored... Use this helper with one argument at time.
+                #Attention : /!\ Packager ! You provided more than one argument to ynh_safe_rm but it will be ignored... Use this helper with one argument at time.
                 #Info : 'lib/images/toolbar/empty.png' wasn't deleted because it doesn't exist.
             if [ -f "$line" ]; then
-                ynh_secure_remove --file "$line"
+                ynh_safe_rm "$line"
             fi
         done < <(grep --null --extended-regexp --invert-match '^($|#)' "$install_dir/data/deleted.files" | xargs --null --max-args=1 || true)
         #    ^ ^  First < is redirection, second is process substitution.
@@ -196,10 +182,10 @@ then
 
         # Previous attemps if someone reads this one day
         ###grep --extended-regexp --invert-match '^($|#)' data/deleted.files | xargs --max-args=1 rm --verbose --force --dir 2>&1 || true
-        ###grep --extended-regexp --invert-match '^($|#)' data/deleted.files | xargs --max-args=1 ynh_secure_remove --file 2>&1
-        
+        ###grep --extended-regexp --invert-match '^($|#)' data/deleted.files | xargs --max-args=1 ynh_safe_rm 2>&1
+
         ###grep --null --extended-regexp --invert-match '^($|#)' data/deleted.files > toto.list
-        ###xargs --null --verbose --max-args=1 --arg-file=toto.list ynh_secure_remove 2>&1
+        ###xargs --null --verbose --max-args=1 --arg-file=toto.list ynh_safe_rm 2>&1
 fi
 
     # TODO Taken from old "upgrade" script. Should check if it is needed and what it does
@@ -218,34 +204,32 @@ fi
     # Stolen from https://github.com/YunoHost-Apps/grav_ynh/blob/testing/scripts/upgrade#L189
     if [ -x "$install_dir/bin/plugin.php" ]; then
         pushd "$install_dir"
-            ynh_exec_warn_less ynh_exec_as $app php$phpversion bin/plugin.php --no-colors extension upgrade || ynh_print_warn --message="Automatic plugin upgrade has failed, you can upgrade them from your DokuWiki admin panel."
+            ynh_hide_warnings ynh_exec_as_app php$php_version bin/plugin.php --no-colors extension upgrade || ynh_print_warn "Automatic plugin upgrade has failed, you can upgrade them from your DokuWiki admin panel."
         popd
     else
-        ynh_print_warn --message="Automatic plugin cannot be done, you have to upgrade them from your DokuWiki admin panel."
+        ynh_print_warn "Automatic plugin cannot be done, you have to upgrade them from your DokuWiki admin panel."
     fi
 fi
 
 #=================================================
 # UPDATE A CONFIG FILE
 #=================================================
-ynh_script_progression --message="Adding a configuration file..." --weight=2
+ynh_script_progression "Adding $app's configuration..."
 
 # Customize admin group in case of multiple wiki install managed by different admins
 # dokuwiki.admin; dokuwiki__1.admin; etc
-ynh_add_config --template="../conf/local.protected.php" --destination="$install_dir/conf/local.protected.php"
+ynh_config_add --template="local.protected.php" --destination="$install_dir/conf/local.protected.php"
 
-#=================================================
-# GENERIC FINALIZATION
 #=================================================
 # UPGRADE FAIL2BAN
 #=================================================
-ynh_script_progression --message="Reconfiguring Fail2Ban..." --weight=7
+ynh_script_progression "Reconfiguring Fail2Ban..."
 
 # Create a dedicated Fail2Ban config
-ynh_add_fail2ban_config --logpath="/var/log/nginx/$domain-error.log" --failregex="^.*authentication failure. while reading response header from upstream, client: <HOST>,.*POST $path.*$" --max_retry=5
+ynh_config_add_fail2ban --logpath="/var/log/nginx/$domain-error.log" --failregex="^.*authentication failure. while reading response header from upstream, client: <HOST>,.*POST $path.*$"
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Upgrade of $app completed" --last
+ynh_script_progression "Upgrade of $app completed"
