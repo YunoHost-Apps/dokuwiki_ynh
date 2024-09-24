@@ -10,24 +10,6 @@ ynh_app_setting_set_default --key=php_upload_max_filesize --value=25M
 #=================================================
 ynh_script_progression "Ensuring downward compatibility..."
 
-# If fpm_footprint doesn't exist, create it
-if [ -z "${fpm_footprint:-}" ]; then
-    fpm_footprint=low
-#REMOVEME? Everything about fpm_footprint is removed in helpers2.1... |     ynh_app_setting_set --key=fpm_footprint --value=$fpm_footprint
-fi
-
-# If fpm_free_footprint doesn't exist, create it
-if [ -z "${fpm_free_footprint:-}" ]; then
-    fpm_free_footprint=0
-#REMOVEME? Everything about fpm_free_footprint is removed in helpers2.1... |     ynh_app_setting_set --key=fpm_free_footprint --value=$fpm_free_footprint
-fi
-
-# If fpm_usage doesn't exist, create it
-if [ -z "${fpm_usage:-}" ]; then
-    fpm_usage=low
-#REMOVEME? Everything about fpm_usage is removed in helpers2.1... |     ynh_app_setting_set --key=fpm_usage --value=$fpm_usage
-fi
-
 # Yunohost specific configuration, if it isn't exist already
 
 # Previously, these settings were store in an unique "dokuwiki.php"
@@ -110,105 +92,90 @@ fi
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
+ynh_script_progression "Upgrading source files..."
 
-# FIXME: this is still supported but the recommendation is now to *always* re-setup the app sources wether or not the upstream sources changed
-if ynh_app_upstream_version_changed
-then
-	ynh_script_progression "Upgrading source files..."
+ynh_setup_source --dest_dir="$install_dir"
 
-	# Download, check integrity, uncompress and patch the source from app.src
-	ynh_setup_source --dest_dir="$install_dir"
-fi
-
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod -R o-rwx "$install_dir"
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app:www-data "$install_dir"
 #=================================================
 # REAPPLY SYSTEM CONFIGURATIONS
 #=================================================
 ynh_script_progression "Upgrading system configurations related to $app..."
 
-# Create a dedicated PHP-FPM config
 ynh_config_add_phpfpm
 
-# Create a dedicated NGINX config
 ynh_config_add_nginx
 
 #=================================================
 # UPGRADE DOKUWIKI
 #=================================================
+ynh_script_progression "Upgrading DokuWiki..."
 
-# FIXME: this is still supported but the recommendation is now to *always* re-setup the app sources wether or not the upstream sources changed
-if ynh_app_upstream_version_changed
-then
-    ynh_script_progression "Upgrading DokuWiki..."
+# Remove upgrade notification inside Dokuwiki's admin panel
+# See https://www.dokuwiki.org/update_check
+touch $install_dir/doku.php
 
-    # Remove upgrade notification inside Dokuwiki's admin panel
-    # See https://www.dokuwiki.org/update_check
-    touch $install_dir/doku.php
+# Remove files not used anymore after upgrade
+# See https://www.dokuwiki.org/install:unused_files
+if [ -f "$install_dir/data/deleted.files" ]; then
 
-    # Remove files not used anymore after upgrade
-    # See https://www.dokuwiki.org/install:unused_files
-    if [ -f "$install_dir/data/deleted.files" ]; then
+    # Feed output of grep[...] line by line to 'ynh_safe_rm '
+    # 'ynh_safe_rm ' can only work file by file. Cannot work with a list
+    # This is a (complicated) workaround this limitation
+    while IFS= read -r line; do
 
-        # Feed output of grep[...] line by line to 'ynh_safe_rm '
-        # 'ynh_safe_rm ' can only work file by file. Cannot work with a list
-        # This is a (complicated) workaround this limitation
-        while IFS= read -r line; do
+        # Added this test to reduce the spam printed by helper to the user in the webadmin.
+        # Should be less 'scary' to them I think
+        #
+        # number of messages = number of lines *2    (673 lines while writing this)
+        ### grep --extended-regexp --invert-match '^($|#)' data/deleted.files | wc -l
+        ### 673
+        #
+        # Spam sample:
+            #Attention : /!\ Packager ! You provided more than one argument to ynh_safe_rm but it will be ignored... Use this helper with one argument at time.
+            #Info : 'inc/parser/spamcheck.php' wasn't deleted because it doesn't exist.
+            #Attention : /!\ Packager ! You provided more than one argument to ynh_safe_rm but it will be ignored... Use this helper with one argument at time.
+            #Attention : /!\ Packager ! You provided more than one argument to ynh_safe_rm but it will be ignored... Use this helper with one argument at time.
+            #Info : 'lib/images/favicon.ico' wasn't deleted because it doesn't exist.
+            #Info : 'lib/images/thumbup.gif' wasn't deleted because it doesn't exist.
+            #Attention : /!\ Packager ! You provided more than one argument to ynh_safe_rm but it will be ignored... Use this helper with one argument at time.
+            #Info : 'lib/images/toolbar/code.png' wasn't deleted because it doesn't exist.
+            #Attention : /!\ Packager ! You provided more than one argument to ynh_safe_rm but it will be ignored... Use this helper with one argument at time.
+            #Info : 'lib/images/toolbar/empty.png' wasn't deleted because it doesn't exist.
+        if [ -f "$line" ]; then
+            ynh_safe_rm "$line"
+        fi
+    done < <(grep --null --extended-regexp --invert-match '^($|#)' "$install_dir/data/deleted.files" | xargs --null --max-args=1 || true)
+    #    ^ ^  First < is redirection, second is process substitution.
+    # Source: https://tldp.org/LDP/abs/html/process-sub.html
 
-            # Added this test to reduce the spam printed by helper to the user in the webadmin.
-            # Should be less 'scary' to them I think
-            #
-            # number of messages = number of lines *2    (673 lines while writing this)
-            ### grep --extended-regexp --invert-match '^($|#)' data/deleted.files | wc -l
-            ### 673
-            #
-            # Spam sample:
-                #Attention : /!\ Packager ! You provided more than one argument to ynh_safe_rm but it will be ignored... Use this helper with one argument at time.
-                #Info : 'inc/parser/spamcheck.php' wasn't deleted because it doesn't exist.
-                #Attention : /!\ Packager ! You provided more than one argument to ynh_safe_rm but it will be ignored... Use this helper with one argument at time.
-                #Attention : /!\ Packager ! You provided more than one argument to ynh_safe_rm but it will be ignored... Use this helper with one argument at time.
-                #Info : 'lib/images/favicon.ico' wasn't deleted because it doesn't exist.
-                #Info : 'lib/images/thumbup.gif' wasn't deleted because it doesn't exist.
-                #Attention : /!\ Packager ! You provided more than one argument to ynh_safe_rm but it will be ignored... Use this helper with one argument at time.
-                #Info : 'lib/images/toolbar/code.png' wasn't deleted because it doesn't exist.
-                #Attention : /!\ Packager ! You provided more than one argument to ynh_safe_rm but it will be ignored... Use this helper with one argument at time.
-                #Info : 'lib/images/toolbar/empty.png' wasn't deleted because it doesn't exist.
-            if [ -f "$line" ]; then
-                ynh_safe_rm "$line"
-            fi
-        done < <(grep --null --extended-regexp --invert-match '^($|#)' "$install_dir/data/deleted.files" | xargs --null --max-args=1 || true)
-        #    ^ ^  First < is redirection, second is process substitution.
-        # Source: https://tldp.org/LDP/abs/html/process-sub.html
+    # Previous attemps if someone reads this one day
+    ###grep --extended-regexp --invert-match '^($|#)' data/deleted.files | xargs --max-args=1 rm --verbose --force --dir 2>&1 || true
+    ###grep --extended-regexp --invert-match '^($|#)' data/deleted.files | xargs --max-args=1 ynh_safe_rm 2>&1
 
-        # Previous attemps if someone reads this one day
-        ###grep --extended-regexp --invert-match '^($|#)' data/deleted.files | xargs --max-args=1 rm --verbose --force --dir 2>&1 || true
-        ###grep --extended-regexp --invert-match '^($|#)' data/deleted.files | xargs --max-args=1 ynh_safe_rm 2>&1
-
-        ###grep --null --extended-regexp --invert-match '^($|#)' data/deleted.files > toto.list
-        ###xargs --null --verbose --max-args=1 --arg-file=toto.list ynh_safe_rm 2>&1
+    ###grep --null --extended-regexp --invert-match '^($|#)' data/deleted.files > toto.list
+    ###xargs --null --verbose --max-args=1 --arg-file=toto.list ynh_safe_rm 2>&1
 fi
 
-    # TODO Taken from old "upgrade" script. Should check if it is needed and what it does
-    # Update all plugins
-    ###for name_plugin in $(sudo -s cat $install_dir/lib/plugins/*/plugin.info.txt | grep url | awk -F ':' '{print $3}');
-    ###do
-    ###    # Get a official plugin for dokuwiki, not update a no-official
-    ###    wget -nv --quiet "https://github.com/splitbrain/dokuwiki-plugin-$name_plugin/zipball/master" -O "${name_plugin}.zip" -o /dev/null || true
-    ###    if [ -s "${name_plugin}.zip" ]; then
-    ###        unzip ${name_plugin}.zip
-    ###        cp -a splitbrain-dokuwiki-plugin-${name_plugin}*/. "$install_dir/lib/plugins/$name_plugin/"
-    ###    fi
-    ###done
+# TODO Taken from old "upgrade" script. Should check if it is needed and what it does
+# Update all plugins
+###for name_plugin in $(sudo -s cat $install_dir/lib/plugins/*/plugin.info.txt | grep url | awk -F ':' '{print $3}');
+###do
+###    # Get a official plugin for dokuwiki, not update a no-official
+###    wget -nv --quiet "https://github.com/splitbrain/dokuwiki-plugin-$name_plugin/zipball/master" -O "${name_plugin}.zip" -o /dev/null || true
+###    if [ -s "${name_plugin}.zip" ]; then
+###        unzip ${name_plugin}.zip
+###        cp -a splitbrain-dokuwiki-plugin-${name_plugin}*/. "$install_dir/lib/plugins/$name_plugin/"
+###    fi
+###done
 
-    # if "file" exists and is executable
-    # Stolen from https://github.com/YunoHost-Apps/grav_ynh/blob/testing/scripts/upgrade#L189
-    if [ -x "$install_dir/bin/plugin.php" ]; then
-        pushd "$install_dir"
-            ynh_hide_warnings ynh_exec_as_app php$php_version bin/plugin.php --no-colors extension upgrade || ynh_print_warn "Automatic plugin upgrade has failed, you can upgrade them from your DokuWiki admin panel."
-        popd
-    else
-        ynh_print_warn "Automatic plugin cannot be done, you have to upgrade them from your DokuWiki admin panel."
-    fi
+# if "file" exists and is executable
+# Stolen from https://github.com/YunoHost-Apps/grav_ynh/blob/testing/scripts/upgrade#L189
+if [ -x "$install_dir/bin/plugin.php" ]; then
+    pushd "$install_dir"
+        ynh_hide_warnings ynh_exec_as_app php$php_version bin/plugin.php --no-colors extension upgrade || ynh_print_warn "Automatic plugin upgrade has failed, you can upgrade them from your DokuWiki admin panel."
+    popd
+else
+    ynh_print_warn "Automatic plugin cannot be done, you have to upgrade them from your DokuWiki admin panel."
 fi
 
 #=================================================
@@ -225,7 +192,6 @@ ynh_config_add --template="local.protected.php" --destination="$install_dir/conf
 #=================================================
 ynh_script_progression "Reconfiguring Fail2Ban..."
 
-# Create a dedicated Fail2Ban config
 ynh_config_add_fail2ban --logpath="/var/log/nginx/$domain-error.log" --failregex="^.*authentication failure. while reading response header from upstream, client: <HOST>,.*POST $path.*$"
 
 #=================================================
