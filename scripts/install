@@ -1,58 +1,30 @@
 #!/bin/bash
 
-#=================================================
-# GENERIC START
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
-#=================================================
-# RETRIEVE ARGUMENTS FROM THE MANIFEST
-#=================================================
-
-fpm_footprint="low"
-fpm_free_footprint=0
-fpm_usage="low"
-
-#=================================================
-# STORE SETTINGS FROM MANIFEST
-#=================================================
-
-ynh_app_setting_set --app=$app --key=fpm_footprint --value=$fpm_footprint
-ynh_app_setting_set --app=$app --key=fpm_free_footprint --value=$fpm_free_footprint
-ynh_app_setting_set --app=$app --key=fpm_usage --value=$fpm_usage
+ynh_app_setting_set --key=php_upload_max_filesize --value=25M
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
-ynh_script_progression --message="Setting up source files..." --weight=2
+ynh_script_progression "Setting up source files..."
 
-# Download, check integrity, uncompress and patch the source from app.src
 ynh_setup_source --dest_dir="$install_dir"
-
-chmod -R o-rwx "$install_dir"
-chown -R $app:www-data "$install_dir"
 
 #=================================================
 # SYSTEM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Adding system configurations related to $app..." --weight=1
+ynh_script_progression "Adding system configurations related to $app..."
 
-# Create a dedicated PHP-FPM config
-ynh_add_fpm_config --usage=$fpm_usage --footprint=$fpm_footprint
+ynh_config_add_phpfpm
 
-# Create a dedicated NGINX config
-ynh_add_nginx_config
+ynh_config_add_nginx
 
-#=================================================
-# SPECIFIC SETUP
 #=================================================
 # ADD A CONFIGURATION
 #=================================================
-ynh_script_progression --message="Adding a configuration file..." --weight=2
+ynh_script_progression "Adding $app's configuration..."
 
 # Loading order of configuration files
 #
@@ -64,31 +36,29 @@ ynh_script_progression --message="Adding a configuration file..." --weight=2
 #
 # See https://www.dokuwiki.org/plugin:config#protecting_settings
 
-
 ### Copy YunoHost specific configuration
 # This File cannot be modified directly by DokuWiki, only by hand or by YunoHost
 # It will only be updated by YunoHost package or directly by adventurous users
 
-
 # Customize admin group in case of multiple wiki install managed by different admins
 # dokuwiki.admin; dokuwiki__1.admin; etc
-ynh_add_config --template="../conf/local.protected.php" --destination="$install_dir/conf/local.protected.php"
+ynh_config_add --template="local.protected.php" --destination="$install_dir/conf/local.protected.php"
 
 # This file might be modified by DokuWiki admin panel or by plugins
 # It will not be modified by Yunohost in order to keep user settings
 
 # Set the "language"
-ynh_add_config --template="../conf/local.php" --destination="$install_dir/conf/local.php"
+ynh_config_add --template="local.php" --destination="$install_dir/conf/local.php"
 
 # Restrict user rights by enforcing "read-only" mode for all users
 # See https://www.dokuwiki.org/acl#background_info
 # Default is "8"
-ynh_add_config --template="../conf/acl.auth.php" --destination="$install_dir/conf/acl.auth.php"
+ynh_config_add --template="acl.auth.php" --destination="$install_dir/conf/acl.auth.php"
 
 #=================================================
 # CREATE DEFAULT FILES
 #=================================================
-ynh_script_progression --message="Creating default files..." --weight=1
+ynh_script_progression "Creating default files..."
 
 # For securing DokuWiki installation, create default files that will be writable in the "conf" folder.
 # Other files will be read ony and owned by root.
@@ -110,17 +80,14 @@ cp --archive ../conf/plugins.local.php            $install_dir/conf
 cp --archive ../conf/plugins.local.php            $install_dir/conf/plugins.local.php.bak
 
 #=================================================
-# GENERIC FINALIZATION
-#=================================================
 # SETUP FAIL2BAN
 #=================================================
-ynh_script_progression --message="Configuring Fail2Ban..." --weight=7
+ynh_script_progression "Configuring Fail2Ban..."
 
-# Create a dedicated Fail2Ban config
-ynh_add_fail2ban_config --logpath="/var/log/nginx/$domain-error.log" --failregex="^.*authentication failure. while reading response header from upstream, client: <HOST>,.*POST $path.*$" --max_retry=5
+ynh_config_add_fail2ban --logpath="/var/log/nginx/$domain-error.log" --failregex="^.*authentication failure. while reading response header from upstream, client: <HOST>,.*POST $path.*$"
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Installation of $app completed" --last
+ynh_script_progression "Installation of $app completed"
