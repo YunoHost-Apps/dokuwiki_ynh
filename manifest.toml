@@ -20,7 +20,8 @@ admindoc = "https://www.dokuwiki.org/manual"
 code = "https://github.com/dokuwiki/dokuwiki"
 
 [integration]
-yunohost = ">= 11.2"
+yunohost = ">= 11.2.30"
+helpers_version = "2.1"
 architectures = "all"
 multi_instance = true
 
@@ -66,6 +67,7 @@ ram.runtime = "50M"
     [resources.system_user]
 
     [resources.install_dir]
+    group = "www-data:r-x"
 
     [resources.permissions]
     main.url = "/"
@@ -74,4 +76,4 @@ ram.runtime = "50M"
     admin.allowed = "admins"
 
     [resources.apt]
-    packages = "php8.1-xml, php8.1-ldap, php8.1-gd, php8.1-cli, php8.1-mbstring"
+    packages = "php8.2-xml, php8.2-ldap, php8.2-gd, php8.2-cli, php8.2-mbstring"
