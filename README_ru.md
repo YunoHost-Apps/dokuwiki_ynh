@@ -5,7 +5,9 @@
 
 # Dokuwiki для YunoHost
 
-[![Уровень интеграции](https://dash.yunohost.org/integration/dokuwiki.svg)](https://ci-apps.yunohost.org/ci/apps/dokuwiki/) ![Состояние работы](https://ci-apps.yunohost.org/ci/badges/dokuwiki.status.svg) ![Состояние сопровождения](https://ci-apps.yunohost.org/ci/badges/dokuwiki.maintain.svg)
+[![Уровень интеграции](https://apps.yunohost.org/badge/integration/dokuwiki)](https://ci-apps.yunohost.org/ci/apps/dokuwiki/)
+![Состояние работы](https://apps.yunohost.org/badge/state/dokuwiki)
+![Состояние сопровождения](https://apps.yunohost.org/badge/maintained/dokuwiki)
 
 [![Установите Dokuwiki с YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=dokuwiki)
 

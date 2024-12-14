@@ -5,7 +5,9 @@ Ini TIDAK boleh diedit dengan tangan.
 
 # Dokuwiki untuk YunoHost
 
-[![Tingkat integrasi](https://dash.yunohost.org/integration/dokuwiki.svg)](https://ci-apps.yunohost.org/ci/apps/dokuwiki/) ![Status kerja](https://ci-apps.yunohost.org/ci/badges/dokuwiki.status.svg) ![Status pemeliharaan](https://ci-apps.yunohost.org/ci/badges/dokuwiki.maintain.svg)
+[![Tingkat integrasi](https://apps.yunohost.org/badge/integration/dokuwiki)](https://ci-apps.yunohost.org/ci/apps/dokuwiki/)
+![Status kerja](https://apps.yunohost.org/badge/state/dokuwiki)
+![Status pemeliharaan](https://apps.yunohost.org/badge/maintained/dokuwiki)
 
 [![Pasang Dokuwiki dengan YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=dokuwiki)
 

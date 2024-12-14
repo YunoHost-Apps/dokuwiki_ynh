@@ -5,7 +5,9 @@ It shall NOT be edited by hand.
 
 # Dokuwiki for YunoHost
 
-[![Integration level](https://dash.yunohost.org/integration/dokuwiki.svg)](https://ci-apps.yunohost.org/ci/apps/dokuwiki/) ![Working status](https://ci-apps.yunohost.org/ci/badges/dokuwiki.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/dokuwiki.maintain.svg)
+[![Integration level](https://apps.yunohost.org/badge/integration/dokuwiki)](https://ci-apps.yunohost.org/ci/apps/dokuwiki/)
+![Working status](https://apps.yunohost.org/badge/state/dokuwiki)
+![Maintenance status](https://apps.yunohost.org/badge/maintained/dokuwiki)
 
 [![Install Dokuwiki with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=dokuwiki)
 

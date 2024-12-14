@@ -5,7 +5,9 @@ Hij mag NIET handmatig aangepast worden.
 
 # Dokuwiki voor Yunohost
 
-[![Integratieniveau](https://dash.yunohost.org/integration/dokuwiki.svg)](https://ci-apps.yunohost.org/ci/apps/dokuwiki/) ![Mate van functioneren](https://ci-apps.yunohost.org/ci/badges/dokuwiki.status.svg) ![Onderhoudsstatus](https://ci-apps.yunohost.org/ci/badges/dokuwiki.maintain.svg)
+[![Integratieniveau](https://apps.yunohost.org/badge/integration/dokuwiki)](https://ci-apps.yunohost.org/ci/apps/dokuwiki/)
+![Mate van functioneren](https://apps.yunohost.org/badge/state/dokuwiki)
+![Onderhoudsstatus](https://apps.yunohost.org/badge/maintained/dokuwiki)
 
 [![Dokuwiki met Yunohost installeren](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=dokuwiki)
 

@@ -5,7 +5,9 @@ EZ editatu eskuz.
 
 # Dokuwiki YunoHost-erako
 
-[![Integrazio maila](https://dash.yunohost.org/integration/dokuwiki.svg)](https://ci-apps.yunohost.org/ci/apps/dokuwiki/) ![Funtzionamendu egoera](https://ci-apps.yunohost.org/ci/badges/dokuwiki.status.svg) ![Mantentze egoera](https://ci-apps.yunohost.org/ci/badges/dokuwiki.maintain.svg)
+[![Integrazio maila](https://apps.yunohost.org/badge/integration/dokuwiki)](https://ci-apps.yunohost.org/ci/apps/dokuwiki/)
+![Funtzionamendu egoera](https://apps.yunohost.org/badge/state/dokuwiki)
+![Mantentze egoera](https://apps.yunohost.org/badge/maintained/dokuwiki)
 
 [![Instalatu Dokuwiki YunoHost-ekin](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=dokuwiki)
 
