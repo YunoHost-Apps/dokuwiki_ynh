@@ -8,7 +8,7 @@ description.de = "Standardkonformes, einfach zu benutzendes Wiki und zielt haupt
 description.es = "Sistema de Wiki de uso sencillicimo y compatible con los estándares"
 description.it = "Wiki aderente agli standard, semplice da usare, finalizzato principalmente alla creazione di documentazione di qualsiasi tipo"
 
-version = "2024.02.06a~ynh1"
+version = "2025.05.14~ynh1"
 
 maintainers = []
 
@@ -58,8 +58,8 @@ ram.runtime = "50M"
 
 [resources]
         [resources.sources.main]
-        url = "https://github.com/dokuwiki/dokuwiki/archive/refs/tags/release-2024-02-06a.tar.gz"
-        sha256 = "3d025174169bb15be36b934f63974772b8caa9ea23e1b0c93f897396642b1697"
+        url = "https://github.com/dokuwiki/dokuwiki/archive/refs/tags/release-2025-05-14.tar.gz"
+        sha256 = "8254fc2650ce205ab5ce3ebfdc2e1adf864a16fb9395ea6c651c016449d9d9df"
         autoupdate.strategy = "latest_github_tag"
         autoupdate.version_regex = "^release-([0-9]{4})-([0-9]{2})-([0-9]{2})[a-z]*$"
 
