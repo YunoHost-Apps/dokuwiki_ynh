@@ -7,6 +7,7 @@ description.fr = "Wiki léger, simple à utiliser et très polyvalent"
 description.de = "Standardkonformes, einfach zu benutzendes Wiki und zielt hauptsächlich auf die Erstellung von Dokumentationen aller Art ab"
 description.es = "Sistema de Wiki de uso sencillicimo y compatible con los estándares"
 description.it = "Wiki aderente agli standard, semplice da usare, finalizzato principalmente alla creazione di documentazione di qualsiasi tipo"
+description.pt_BR = "Wiki leve, simples de usar e altamente versátil"
 
 version = "2025.05.14~ynh1"
 
@@ -43,14 +44,16 @@ ram.runtime = "50M"
     [install.init_main_permission]
     help.en = "Makes the wiki accessible directly from the Internet for everyone, without intermediate YunoHost authentication"
     help.fr = "Rend le wiki accessible directement depuis Internet pour tout le monde, sans authentification YunoHost intermédiaire"
+    help.pt_BR = "Torna o wiki acessível diretamente da Internet para todos, sem autenticação intermediária do YunoHost"
     type = "group"
     default = "visitors"
 
     [install.language]
     ask.en = "Choose the application language"
     ask.fr = "Choisissez la langue de l'application"
+    ask.pt_BR = "Escolha o idioma do aplicativo"
     type = "select"
-    choices = ["en", "fr"]
+    choices = ["af", "ar", "bg", "ca-valencia", "ca", "ckb", "cs", "cy", "da", "de-informal", "de", "el", "en", "eo", "es", "et", "eu", "fa", "fi", "fr", "gl", "he", "hr", "hu", "ia", "id", "is", "it", "ja", "kk", "km", "ko", "la", "lb", "lt", "lv", "mk", "mr", "ne", "nl", "no", "pl", "pt-br", "pt", "ro", "ru", "sk", "sl", "sq", "sr", "sv", "th", "tr", "uk", "vi", "zh-tw", "zh"]
     default = "en"
 
     [install.admin]
