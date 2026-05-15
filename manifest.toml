@@ -8,7 +8,7 @@ description.de = "Standardkonformes, einfach zu benutzendes Wiki und zielt haupt
 description.es = "Sistema de Wiki de uso sencillicimo y compatible con los estándares"
 description.it = "Wiki aderente agli standard, semplice da usare, finalizzato principalmente alla creazione di documentazione di qualsiasi tipo"
 
-version = "2025.05.14~ynh1"
+version = "2025.05.14~ynh2"
 
 maintainers = []
 
@@ -20,7 +20,7 @@ admindoc = "https://www.dokuwiki.org/manual"
 code = "https://github.com/dokuwiki/dokuwiki"
 
 [integration]
-yunohost = ">= 12.0.9"
+yunohost = ">= 12.1.39"
 helpers_version = "2.1"
 architectures = "all"
 multi_instance = true
@@ -50,8 +50,8 @@ ram.runtime = "50M"
     ask.en = "Choose the application language"
     ask.fr = "Choisissez la langue de l'application"
     type = "select"
-    choices = ["en", "fr"]
-    default = "en"
+    choices = ["de", "en", "es", "fr", "it", "nl", "pt"]
+    default = "fr"
 
     [install.admin]
     type = "user"
