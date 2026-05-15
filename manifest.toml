@@ -8,7 +8,7 @@ description.de = "Standardkonformes, einfach zu benutzendes Wiki und zielt haupt
 description.es = "Sistema de Wiki de uso sencillicimo y compatible con los estándares"
 description.it = "Wiki aderente agli standard, semplice da usare, finalizzato principalmente alla creazione di documentazione di qualsiasi tipo"
 
-version = "2025.05.14~ynh1"
+version = "2025.05.14~ynh2"
 
 maintainers = []
 
