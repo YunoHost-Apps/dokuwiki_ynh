@@ -1,0 +1,8 @@
+DokuWiki é um software wiki de código aberto, simples de usar e altamente versátil, que não requer um banco de dados. É apreciado pelos usuários por sua sintaxe limpa e legível. A facilidade de manutenção, backup e integração o torna o favorito dos administradores. Os controles de acesso e conectores de autenticação integrados tornam o DokuWiki especialmente útil no contexto corporativo, e o grande número de plugins contribuídos por sua ativa comunidade permite uma ampla gama de casos de uso além de uma wiki tradicional.
+
+## Funcionalidades específicas do YunoHost
+
+* Integrar com usuários e SSO do YunoHost - por exemplo, botão de logout
+* Permitir que um usuário seja o "administrador" (configurado durante a instalação)
+* A autorização padrão está definida como somente leitura, impedindo que visitantes editem páginas. (Isso é especialmente necessário em wikis públicas para evitar spam e vandalismo. Pode ser alterado no painel de administração.)
+* Durante a atualização, os plugins oficiais também são atualizados. Recomendamos que você verifique se eles estão funcionando corretamente no painel de administração após a atualização. Não temos como saber se algum plugin foi afetado...
